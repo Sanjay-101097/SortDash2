@@ -1,0 +1,98 @@
+{
+  "ver": "2.3.13",
+  "importer": "fbx",
+  "imported": true,
+  "uuid": "1259550c-7d68-45ba-8202-9ff87c0ef699",
+  "files": [],
+  "subMetas": {
+    "e50ed": {
+      "importer": "gltf-mesh",
+      "uuid": "1259550c-7d68-45ba-8202-9ff87c0ef699@e50ed",
+      "displayName": "",
+      "id": "e50ed",
+      "name": "bus.mesh",
+      "userData": {
+        "gltfIndex": 0,
+        "triangleCount": 4952
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "ed70c": {
+      "importer": "gltf-material",
+      "uuid": "1259550c-7d68-45ba-8202-9ff87c0ef699@ed70c",
+      "displayName": "",
+      "id": "ed70c",
+      "name": "Color2.material",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9f90": {
+      "importer": "gltf-scene",
+      "uuid": "1259550c-7d68-45ba-8202-9ff87c0ef699@f9f90",
+      "displayName": "",
+      "id": "f9f90",
+      "name": "Collector_10.prefab",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "imageMetas": [],
+    "legacyFbxImporter": false,
+    "assetFinder": {
+      "meshes": [
+        "1259550c-7d68-45ba-8202-9ff87c0ef699@e50ed"
+      ],
+      "skeletons": [],
+      "textures": [],
+      "materials": [
+        "1259550c-7d68-45ba-8202-9ff87c0ef699@ed70c"
+      ],
+      "scenes": [
+        "1259550c-7d68-45ba-8202-9ff87c0ef699@f9f90"
+      ]
+    },
+    "fbx": {
+      "smartMaterialEnabled": false,
+      "matchMeshNames": false
+    },
+    "lods": {
+      "enable": false,
+      "hasBuiltinLOD": false,
+      "options": [
+        {
+          "screenRatio": 0.25,
+          "faceCount": 1
+        },
+        {
+          "screenRatio": 0.125,
+          "faceCount": 0.25
+        },
+        {
+          "screenRatio": 0.01,
+          "faceCount": 0.1
+        }
+      ]
+    }
+  }
+}
