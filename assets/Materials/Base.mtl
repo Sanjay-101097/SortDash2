@@ -68,10 +68,11 @@
   ],
   "_props": [
     {
-      "occlusion": 1,
+      "occlusion": 0.426,
       "roughness": 0,
+      "specularIntensity": 0,
       "mainTexture": {
-        "__uuid__": "cbd0b603-1d61-4b49-aaf9-72ceef76a5cd@6c48a",
+        "__uuid__": "315a13f5-72ce-4695-8e16-78748c06a4eb@6c48a",
         "__expectedType__": "cc.Texture2D"
       }
     },

@@ -84,6 +84,7 @@ export class Box extends Component {
         }
 
         const worldPos = this.node.getWorldPosition();
+        const parentIdx = this.node.parent.getSiblingIndex()
         this.node.removeFromParent();
         parentNode.addChild(this.node);
 
@@ -105,15 +106,16 @@ export class Box extends Component {
         pos.y = Math.round(pos.y * 10) / 10;
         pos.z = Math.round(pos.z * 10) / 10;
         let a = Math.abs(Vec3.dot(this.direction, worldUp))
-        if (pos.x > -1.5 && !this.fromcollector) {
+        if (pos.z < -1.6 && !this.fromcollector) {
 
-            Vec3.cross(this.perpendicular, this.direction, new Vec3(-1, 0, 0));
-        } else {
+
+        } if (parentIdx >= 0 && parentIdx <= 4) {
             Vec3.cross(this.perpendicular, this.direction, worldUp);
+        } else {
+            Vec3.cross(this.perpendicular, this.direction, new Vec3(-1, 0, 0));
         }
         Vec3.normalize(this.perpendicular, this.perpendicular);
         this.isanim = true;
-
 
 
     }
@@ -125,44 +127,44 @@ export class Box extends Component {
     enabl = true;
     update(deltaTime: number) {
         if (!this.isanim) return;
-    
+
         // this.timeElapsed += deltaTime;
         // let t = this.timeElapsed / this.duration;
         // if (t > 1) t = 1;
-    
+
         this.timeElapsed += deltaTime;
         let t = this.timeElapsed / this.duration;
         if (t > 1) t = 1;
-        
+
         const basePos = new Vec3();
         Vec3.lerp(basePos, this.startPosition, this.endPosition, t);
-        
+
         const waveProgress = this.timeElapsed * this.frequency;
-        const sineOffset = Math.sin(  Math.PI * t) * this.amplitude * this.dir;
-        
+        const sineOffset = Math.sin(Math.PI * t) * this.amplitude * this.dir;
+
         const offset = new Vec3();
         Vec3.multiplyScalar(offset, this.perpendicular, sineOffset);
-        
+
         const finalPos = new Vec3();
         Vec3.add(finalPos, basePos, offset);
         this.node.setPosition(finalPos);
-        
+
         // Stop only when fully done
         if (t >= 1) {
             // this.node.setPosition(this.endPosition); // Optional: snap to final pos
             this.isanim = false;
         }
-        
-    
+
+
         // Scale animation
         const scale = 1 + (0.7 - 1) * t;
         this.node.setScale(scale, scale, scale);
-    
+
         // Rotation interpolation
         this.rotationElapsed += deltaTime;
         let rt = this.rotationElapsed / this.rotationDuration;
         if (rt > 1) rt = 1;
-    
+
         const lerpAngle = (start: number, end: number, alpha: number) => start + (end - start) * alpha;
         const currentEuler = this.node.eulerAngles;
         this.node.eulerAngles = new Vec3(
@@ -170,42 +172,42 @@ export class Box extends Component {
             lerpAngle(currentEuler.y, this.collectorRotation.y, rt),
             lerpAngle(currentEuler.z, this.collectorRotation.z, rt)
         );
-    
+
         // Reparenting logic
         if (this.timeElapsed >= this.duration) {
             this.isanim = false;
-    
+
             if (this.isBus &&
                 this.node.position.x <= this.busarray[this.idx].x + 0.01 &&
                 this.node.position.x >= this.busarray[this.idx].x - 0.01) {
-    
+
                 const worldPos = this.node.getWorldPosition();
                 const worldRot = this.node.getWorldRotation();
-    
+
                 const localPos = new Vec3();
                 this.Bus.inverseTransformPoint(localPos, worldPos);
-    
+
                 const worldRotQuat = new Quat();
                 this.node.getWorldRotation(worldRotQuat);
-    
+
                 const parentWorldRot = new Quat();
                 this.Bus.getWorldRotation(parentWorldRot);
-    
+
                 const parentWorldRotInv = new Quat();
                 Quat.invert(parentWorldRotInv, parentWorldRot);
-    
+
                 const localRot = new Quat();
                 Quat.multiply(localRot, parentWorldRotInv, worldRotQuat);
-    
+
                 this.node.removeFromParent();
                 this.Bus.addChild(this.node);
-    
+
                 this.node.setPosition(localPos);
                 this.node.setRotationFromEuler(0, 0, 90);
             }
         }
     }
-    
+
 
     // Optional: reset animation
     public resetAnimation() {

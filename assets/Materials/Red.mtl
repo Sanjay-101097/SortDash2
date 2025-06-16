@@ -10,9 +10,7 @@
   },
   "_techIdx": 0,
   "_defines": [
-    {
-      "USE_INSTANCING": true
-    },
+    {},
     {},
     {},
     {},
@@ -69,13 +67,19 @@
     {
       "mainColor": {
         "__type__": "cc.Color",
-        "r": 217,
-        "g": 59,
-        "b": 24,
+        "r": 204,
+        "g": 1,
+        "b": 1,
         "a": 255
       },
-      "occlusion": 1,
-      "roughness": 1
+      "albedoScale": {
+        "__type__": "cc.Vec3",
+        "x": 0.95,
+        "y": 1,
+        "z": 1
+      },
+      "roughness": 0.4,
+      "specularIntensity": 1
     },
     {},
     {},

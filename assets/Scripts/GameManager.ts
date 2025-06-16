@@ -1,5 +1,5 @@
 
-import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, EventTouch, geometry, Input, input, Material, Node, PhysicsSystem, RigidBody, sys, Tween, tween, TweenAction, TweenSystem, v3, Vec2, Vec3 } from 'cc';
+import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, easing, EventTouch, geometry, Input, input, Material, Node, ParticleSystem, PhysicsSystem, RigidBody, Sprite, SpriteFrame, sys, Tween, tween, TweenAction, TweenSystem, v3, Vec2, Vec3, view } from 'cc';
 import { TileCreation } from './TileCreation';
 import { Box } from './Box';
 import { super_html_playable } from './super_html_playable';
@@ -31,6 +31,9 @@ export class GameManager extends Component {
     Plane: Node = null;
 
     @property(Node)
+    particle: Node = null;
+
+    @property(Node)
     Canvas: Node = null;
 
     @property(Node)
@@ -51,6 +54,9 @@ export class GameManager extends Component {
 
     @property(AudioClip)
     Audioclips: AudioClip[] = [];
+
+      @property(SpriteFrame)
+    HandSF: SpriteFrame[] = [];
 
 
     super_html_playable: super_html_playable = new super_html_playable();
@@ -93,7 +99,41 @@ export class GameManager extends Component {
             .repeatForever()
             .start();
 
-        // tween(this.Bolock).to(0.5,{eulerAngles:new Vec3(0,-90,0)})
+         this.scheduleOnce(() => {
+            this.sethandpos();
+        }, 0.1)
+    }
+
+        sethandpos() {
+        const visibleSize = view.getVisibleSizeInPixel();
+        const height = window.innerHeight;
+        let xdiff = 40;
+        let ydiff = 60;
+
+        if (height >= 800) {
+            xdiff = 0
+            ydiff = 40
+        }
+
+        let nodeToAnimate = this.Canvas.getChildByName("BubbleIdle")
+        nodeToAnimate.setPosition(-178+ xdiff , -172 + ydiff)
+        const change = tween(nodeToAnimate).delay(0.3)
+            .call(() => {
+                nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[1];
+            })
+            .delay(0.3)
+            .call(() => {
+                nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[0];
+            })
+        const In = tween(nodeToAnimate)
+            .to(0.8, { position: v3(-8 , -172 + ydiff, 1.1) });
+        const Out = tween(nodeToAnimate)
+            .to(0.8, { position: v3(-178+ xdiff , -172 + ydiff, 0) });
+        tween(nodeToAnimate)
+            .sequence(change, In, change, Out)
+            .union()
+            .repeatForever()
+            .start();
     }
 
 
@@ -121,7 +161,7 @@ export class GameManager extends Component {
         // this.anim();
         if (this.isAnimating) return; // Block touch during animations
         this.isAnimating = true;
-        this.Collector.getComponent(AudioSource).play();
+        // this.Collector.getComponent(AudioSource).play();
 
         Tween.stopAll();
         const mousePos = event.getLocation();
@@ -141,8 +181,8 @@ export class GameManager extends Component {
             const node = collider.node;
 
 
-            if (node.name === "Col") {
-                this.audioSource.playOneShot(this.Audioclips[0], 1);
+            if (node.name === "Col" && node.children.length > 1) {
+                // this.audioSource.playOneShot(this.Audioclips[0], 1);
                 let sIdx = 0;
                 this.schedule(() => {
                     let box
@@ -169,6 +209,18 @@ export class GameManager extends Component {
                     pos.y = Math.round(pos.y * 10) / 10;
                     pos.z = Math.round(pos.z * 10) / 10;
 
+                    if (box.node.parent.children.length <= 2) {
+                        this.particle.setPosition(box.node.parent.position);
+                        this.particle.active = true;
+                        this.particle.getComponent(ParticleSystem).play()
+                        let tray: Node = box.node.parent.children[0];
+                        tween(tray).to(0.6, { scale: v3(0, 0, 0) }, { easing: "quadOut" })
+                            .delay(0.5)
+                            .call(() => {
+                                this.particle.active = false;
+                            }).start()
+                    }
+
 
                     if (box.node.name == this.buscolor[this.currentBusidx]) {
                         // this.colliderPosCrt(node, node.children.length);
@@ -176,14 +228,16 @@ export class GameManager extends Component {
                         box.anim(this.Bidx, this.BusArr[this.currentBusidx]);
                         this.busArr.push(box.node)
                         this.Bidx += 1;
-                        this.audioSource.playOneShot(this.Audioclips[4], 1);
+                        this.audioSource.playOneShot(this.Audioclips[4], 0.8);
+                        // this.playAudio()
                     } else if (this.Cidx <= 19) {
                         // this.colliderPosCrt(node, node.children.length);
                         box.isBus = false;
                         box.anim(this.Cidx, this.Collector);
                         this.collectorArr.push(box.node)
                         this.Cidx += 1;
-                        this.audioSource.playOneShot(this.Audioclips[4], 1);
+                        this.audioSource.playOneShot(this.Audioclips[4], 0.8);
+                        // this.playAudio()
                     } else {
                         this.wrongCnt += 1
                     }
@@ -273,15 +327,26 @@ export class GameManager extends Component {
                     .to(0.3, { position: initPos }, { easing: 'quadOut' })
                     .call(() => {
                         if (index === total - 1) {
-                              // Call only after the last animation
+                            // Call only after the last animation
                         }
                     })
                     .start();
             });
             onComplete();
-        },0.4)
+        }, 0.4)
 
     }
+
+    // playAudio() {
+    //     for(let idx =0;idx<5;idx++){
+    //  this.scheduleOnce(() => {
+
+    //        this.audioSource.playOneShot(this.Audioclips[4], 1);
+           
+    //     }, idx * 0.05);
+    //     }
+       
+    // }
 
 
 
