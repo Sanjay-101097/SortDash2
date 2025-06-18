@@ -55,7 +55,7 @@ export class GameManager extends Component {
     @property(AudioClip)
     Audioclips: AudioClip[] = [];
 
-      @property(SpriteFrame)
+    @property(SpriteFrame)
     HandSF: SpriteFrame[] = [];
 
 
@@ -71,7 +71,7 @@ export class GameManager extends Component {
 
     collectorArr: Node[] = [];
     busArr: Node[] = [];
-    buscolor: string[] = ["0", "3", "4", "2", "1"];
+    buscolor: string[] = ["0", "2", "3", "0", "2"];
     currentBusidx = 0;
     colliderinfo: Vec2[] = [new Vec2(2.7, 5.6), new Vec2(2, 4.2), , new Vec2(1.3, 2.7)]
     colliderpos: number[] = [4.7, 3.4, 2, 0.6]
@@ -90,7 +90,7 @@ export class GameManager extends Component {
         this.Canvas.active = true;
         let nodeToAnimate = this.Canvas.getChildByName("Label");
         const zoomIn = tween(nodeToAnimate)
-            .to(0.8, { scale: v3(0.7,0.7, 0.7) });
+            .to(0.8, { scale: v3(0.7, 0.7, 0.7) });
         const zoomOut = tween(nodeToAnimate)
             .to(0.8, { scale: v3(0.6, 0.6, 0.6) });
         tween(nodeToAnimate)
@@ -99,12 +99,12 @@ export class GameManager extends Component {
             .repeatForever()
             .start();
 
-         this.scheduleOnce(() => {
+        this.scheduleOnce(() => {
             this.sethandpos();
         }, 0.1)
     }
 
-        sethandpos() {
+    sethandpos() {
         const visibleSize = view.getVisibleSizeInPixel();
         const height = window.innerHeight;
         let xdiff = 40;
@@ -116,7 +116,7 @@ export class GameManager extends Component {
         }
 
         let nodeToAnimate = this.Canvas.getChildByName("BubbleIdle")
-        nodeToAnimate.setPosition(-178+ xdiff , -222 + ydiff)
+        nodeToAnimate.setPosition(-198 + xdiff, -192 + ydiff)
         const change = tween(nodeToAnimate).delay(0.3)
             .call(() => {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[1];
@@ -126,9 +126,9 @@ export class GameManager extends Component {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[0];
             })
         const In = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-8 , -222 + ydiff, 1.1) });
+            .to(0.8, { position: v3(-8, -192 + ydiff, 1.1) });
         const Out = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-178+ xdiff , -222 + ydiff, 0) });
+            .to(0.8, { position: v3(-198 + xdiff, -192 + ydiff, 0) });
         tween(nodeToAnimate)
             .sequence(change, In, change, Out)
             .union()
@@ -183,112 +183,8 @@ export class GameManager extends Component {
 
             if (node.name === "Col" && node.children.length > 1) {
                 // this.audioSource.playOneShot(this.Audioclips[0], 1);
-                let sIdx = 0;
-                this.schedule(() => {
-                    let box
-                    if (node.children?.length > 0) {
-                        box = node.children[node.children?.length - 1]?.addComponent(Box);
-                    } else {
-                        return;
-                    }
+                this.Cardmovement(node)
 
-
-
-                    // console.log("I'm here",this.SelectedNode.getWorldPosition());
-
-                    if (node.getWorldPosition().x >= 0) {
-                        box.dir = 1
-                    } else {
-                        box.dir = -1
-                        box.frequency = 0.5
-                    }
-
-                    const pos = node.getWorldPosition();
-
-                    pos.x = Math.round(pos.x * 10) / 10;
-                    pos.y = Math.round(pos.y * 10) / 10;
-                    pos.z = Math.round(pos.z * 10) / 10;
-
-                    if (box.node.parent.children.length <= 2) {
-                        this.particle.setPosition(box.node.parent.position);
-                        this.particle.active = true;
-                        this.particle.getComponent(ParticleSystem).play()
-                        let tray: Node = box.node.parent.children[0];
-                        tween(tray).to(0.6, { scale: v3(0, 0, 0) }, { easing: "quadOut" })
-                            .delay(0.5)
-                            .call(() => {
-                                this.particle.active = false;
-                            }).start()
-                    }
-
-
-                    if (box.node.name == this.buscolor[this.currentBusidx]) {
-                        // this.colliderPosCrt(node, node.children.length);
-                        box.isBus = true;
-                        box.anim(this.Bidx, this.BusArr[this.currentBusidx]);
-                        this.busArr.push(box.node)
-                        this.Bidx += 1;
-                        this.audioSource.playOneShot(this.Audioclips[4], 0.8);
-                        // this.playAudio()
-                    } else if (this.Cidx <= 19) {
-                        // this.colliderPosCrt(node, node.children.length);
-                        box.isBus = false;
-                        box.anim(this.Cidx, this.Collector);
-                        this.collectorArr.push(box.node)
-                        this.Cidx += 1;
-                        this.audioSource.playOneShot(this.Audioclips[4], 0.8);
-                        // this.playAudio()
-                    } else {
-                        this.wrongCnt += 1
-                    }
-
-                    if (this.Bidx > 9) {
-                        this.Bidx = 0;
-                        let Fbus = this.BusArr[this.currentBusidx]
-                        let Lbus
-                        if (this.currentBusidx == 1) {
-                            Lbus = 0
-                        } else if (this.currentBusidx == 2) {
-                            Lbus = 1
-                        } else {
-                            Lbus = this.currentBusidx + 2
-                        }
-                        this.isAnimating = true;
-                        this.collectoranim = true;
-                        this.playBeforeAnimation(Fbus, () => {
-                            this.scheduleOnce(() => {
-                                this.audioSource.playOneShot(this.Audioclips[1], 1);
-                                tween(this.BusArr[this.currentBusidx])
-                                    .to(0.15, { position: new Vec3(-6.096, 4.751, -14.643) }, { easing: 'quadInOut' })
-                                    .call(() => {
-                                        this.currentBusidx += 1;
-                                        if (this.currentBusidx == 3) this.currentBusidx = 0;
-
-                                        tween(this.BusArr[this.currentBusidx])
-                                            .to(0.15, { position: new Vec3(4.386, 4.751, -4.161) }, { easing: 'quadInOut' })
-                                            .call(() => {
-                                                this.Bidx = 0;
-                                                this.CheckCollector();
-                                                this.enable = true;
-                                                Fbus.setPosition(10.021, 4.751, 1.474);
-                                                Fbus.children?.forEach((child) => child.destroy());
-                                            })
-                                            .start();
-
-                                        tween(this.BusArr[Lbus])
-                                            .to(0.15, { position: new Vec3(7.08, 4.751, -1.467) }, { easing: 'quadInOut' })
-                                            .start();
-                                    })
-                                    .start();
-                            }, 0.7);
-                        });
-                    }
-
-                    sIdx += 1;
-
-
-
-                }, 0.015, 4)
                 this.scheduleOnce(() => {
                     if (!this.collectoranim)
                         this.isAnimating = false;
@@ -310,6 +206,131 @@ export class GameManager extends Component {
         }
 
 
+    }
+
+    playing: boolean = false
+
+    Cardmovement(node) {
+        let sIdx = 0;
+        this.schedule(() => {
+            let box
+            if (node.children?.length > 0) {
+                box = node.children[node.children?.length - 1]?.addComponent(Box);
+            } else {
+                return;
+            }
+
+
+
+            // console.log("I'm here",this.SelectedNode.getWorldPosition());
+
+            if (node.getWorldPosition().x >= 0) {
+                box.dir = 1
+            } else {
+                box.dir = -1
+                box.frequency = 0.5
+            }
+
+            const pos = node.getWorldPosition();
+
+            pos.x = Math.round(pos.x * 10) / 10;
+            pos.y = Math.round(pos.y * 10) / 10;
+            pos.z = Math.round(pos.z * 10) / 10;
+
+            if (box.node.parent.children.length <= 2) {
+                this.particle.setPosition(box.node.parent.position);
+                this.particle.active = true;
+                this.particle.getComponent(ParticleSystem).play()
+                let tray: Node = box.node.parent.children[0];
+                tween(tray).to(0.6, { scale: v3(0, 0, 0) }, { easing: "quadOut" })
+                    .delay(0.5)
+                    .call(() => {
+                        this.particle.active = false;
+                    }).start()
+            }
+
+
+            if (box.node.name == this.buscolor[this.currentBusidx]) {
+                // this.colliderPosCrt(node, node.children.length);
+                box.isBus = true;
+                box.anim(this.Bidx, this.BusArr[this.currentBusidx]);
+                this.busArr.push(box.node)
+                this.Bidx += 1;
+                if (!this.playing) {
+                    this.playing = true;
+                    this.audioSource.playOneShot(this.Audioclips[4], 0.8);
+                }
+
+                // this.playAudio()
+            } else if (this.Cidx <= 19) {
+                // this.colliderPosCrt(node, node.children.length);
+                box.isBus = false;
+                box.anim(this.Cidx, this.Collector);
+                this.collectorArr.push(box.node)
+                this.Cidx += 1;
+                 if (!this.playing) {
+                    this.playing = true;
+                    this.audioSource.playOneShot(this.Audioclips[4], 0.8);
+                }
+                // this.playAudio()
+            } else {
+                this.wrongCnt += 1
+            }
+
+            sIdx += 1;
+            if (sIdx == 5 && box.node.name == node.children[node.children?.length - 1].name && this.Bidx <= 9){
+                
+                this.Cardmovement(node);
+            }
+                if(sIdx == 5)
+                    this.playing = false;
+
+            if (this.Bidx > 9) {
+                this.Bidx = 0;
+                let Fbus = this.BusArr[this.currentBusidx]
+                let Lbus
+                if (this.currentBusidx == 1) {
+                    Lbus = 0
+                } else if (this.currentBusidx == 2) {
+                    Lbus = 1
+                } else {
+                    Lbus = this.currentBusidx + 2
+                }
+                this.isAnimating = true;
+                this.collectoranim = true;
+                this.playBeforeAnimation(Fbus, () => {
+                    this.scheduleOnce(() => {
+                        this.audioSource.playOneShot(this.Audioclips[1], 1);
+                        tween(this.BusArr[this.currentBusidx])
+                            .to(0.15, { position: new Vec3(-6.096, 4.751, -14.643) }, { easing: 'quadInOut' })
+                            .call(() => {
+                                this.currentBusidx += 1;
+                                if (this.currentBusidx == 3) this.currentBusidx = 0;
+
+                                tween(this.BusArr[this.currentBusidx])
+                                    .to(0.15, { position: new Vec3(4.386, 4.751, -4.161) }, { easing: 'quadInOut' })
+                                    .call(() => {
+                                        this.Bidx = 0;
+                                        this.CheckCollector();
+                                        this.enable = true;
+                                        Fbus.setPosition(10.021, 4.751, 1.474);
+                                        Fbus.children?.forEach((child) => child.destroy());
+                                    })
+                                    .start();
+
+                                tween(this.BusArr[Lbus])
+                                    .to(0.15, { position: new Vec3(7.08, 4.751, -1.467) }, { easing: 'quadInOut' })
+                                    .start();
+                            })
+                            .start();
+                    }, 0.7);
+                });
+            }
+
+
+
+
+        }, 0.015, 4)
     }
 
     playBeforeAnimation(node: Node, onComplete: () => void) {
@@ -342,10 +363,10 @@ export class GameManager extends Component {
     //  this.scheduleOnce(() => {
 
     //        this.audioSource.playOneShot(this.Audioclips[4], 1);
-           
+
     //     }, idx * 0.05);
     //     }
-       
+
     // }
 
 
@@ -551,7 +572,7 @@ export class GameManager extends Component {
     update(deltaTime: number) {
         if (this.enable) {
             this.dt += deltaTime;
-            if (this.dt >= 25 || this.wrongCnt >= 15) {
+            if (this.dt >= 30 || this.wrongCnt >= 15) {
                 this.Canvas.active = true;
                 this.Canvas2.active = false;
                 this.Canvas.children[1].active = false;

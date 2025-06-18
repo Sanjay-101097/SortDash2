@@ -33,7 +33,7 @@ export class Box extends Component {
     public frequency: number = 0.5;
     busarray: Vec3[] = [new Vec3(4.838431, 5.352991, -3.361852), new Vec3(4.700545, 5.352991, -3.499738), new Vec3(4.562659, 5.352991, -3.637624), new Vec3(4.424774, 5.352991, -3.77551), new Vec3(4.286888, 5.352991, -3.913395), new Vec3(4.149002, 5.352991, -4.051281), new Vec3(4.014652, 5.352991, -4.185632), new Vec3(3.87323, 5.352991, -4.327053), new Vec3(3.73888, 5.352991, -4.461403), new Vec3(3.60453, 5.352991, -4.595753)]
 
-    collector: Vec3[] = [new Vec3(7.233585, 6.305913, -5.053686), new Vec3(7.092164, 6.305913, -5.195108), new Vec3(6.950743, 6.305913, -5.336529), new Vec3(6.809321, 6.305913, -5.47795), new Vec3(6.6679, 6.305913, -5.619372), new Vec3(6.526392, 6.305913, -5.760781), new Vec3(6.384995, 6.305913, -5.902227), new Vec3(6.243599, 6.305913, -6.043673), new Vec3(6.102202, 6.305913, -6.185119), new Vec3(5.960805, 6.305913, -6.326565), new Vec3(5.819409, 6.305913, -6.468011), new Vec3(5.678012, 6.305913, -6.609457), new Vec3(5.536615, 6.305913, -6.750903), new Vec3(5.395219, 6.305913, -6.892349), new Vec3(5.273822, 6.305913, -7.033795), new Vec3(5.13, 6.306, -7.138), new Vec3(5.019, 6.306, -7.269), new Vec3(4.884, 6.306, -7.404), new Vec3(4.756, 6.306, -7.532), new Vec3(4.621, 6.306, -7.667), new Vec3(4.482, 6.306, -7.806)]//5.15
+    collector: Vec3[] = [new Vec3(7.903, 5.948, -4.752), new Vec3(7.092164, 6.305913, -5.195108), new Vec3(6.950743, 6.305913, -5.336529), new Vec3(6.809321, 6.305913, -5.47795), new Vec3(6.6679, 6.305913, -5.619372), new Vec3(6.526392, 6.305913, -5.760781), new Vec3(6.384995, 6.305913, -5.902227), new Vec3(6.243599, 6.305913, -6.043673), new Vec3(6.102202, 6.305913, -6.185119), new Vec3(5.960805, 6.305913, -6.326565), new Vec3(5.819409, 6.305913, -6.468011), new Vec3(5.678012, 6.305913, -6.609457), new Vec3(5.536615, 6.305913, -6.750903), new Vec3(5.395219, 6.305913, -6.892349), new Vec3(5.273822, 6.305913, -7.033795), new Vec3(5.13, 6.306, -7.138), new Vec3(5.019, 6.306, -7.269), new Vec3(4.884, 6.306, -7.404), new Vec3(4.756, 6.306, -7.532), new Vec3(4.621, 6.306, -7.667), new Vec3(4.482, 6.306, -7.806)]//5.15
 
     collectorRotation: Vec3 = new Vec3(90, -135.01, 67.841);
 
@@ -49,8 +49,11 @@ export class Box extends Component {
     fromcollector: boolean = false;
 
     reset(idx) {
+        let pos = this.collector[0].clone()
+            pos.x -= (idx) * 0.14;
+            pos.z -= (idx) * 0.14;
         tween(this.node)
-            .to(0.05, { position: this.collector[idx] }, { easing: 'sineIn' })
+            .to(0.05, { position: pos }, { easing: 'sineIn' })
             .start();
     }
 
@@ -75,7 +78,9 @@ export class Box extends Component {
             parentNode = this.node.parent.parent.parent;
             if (!this.isBus) {
 
-                this.endPosition = this.collector[idx];
+                this.endPosition = this.collector[0].clone()
+                this.endPosition.x -= (idx) * 0.14;
+                this.endPosition.z -= (idx) * 0.14;
             } else {
                 this.endPosition = this.busarray[idx];
 

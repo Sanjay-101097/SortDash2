@@ -21,12 +21,12 @@ export class TileCreation extends Component {
     colorMaterials: Material[] = [];
 
     color: number[] = [];
-    originalColor: number[] = [0, 1, 2, 3, 4];
+    originalColor: number[] = [0, 1, 2, 3];
 
     @property(Prefab)
     TilePrefab: Prefab = null;
 
-    NUM_Col = 12;
+    NUM_Col = 11;
     HEXAGON_TILES_PER_Col = 20;
 
     public colContainers: Node[] = [];
@@ -40,7 +40,7 @@ export class TileCreation extends Component {
 
     tileGenerate() {
 
-        
+
         let setIndexData = [];
         for (let j = 0; j < this.NUM_Col; j++) {
             let selectedColor = this.selectColor();
@@ -48,19 +48,27 @@ export class TileCreation extends Component {
             let setdata = []
             setIndexData.push(j);
 
+            if (j == 0 || j == 11 || j == 9 || j == 3) {
+                this.HEXAGON_TILES_PER_Col = 15;
+            } else if (j == 10 || j == 8) {
+                this.HEXAGON_TILES_PER_Col = 10;
+            } else {
+                this.HEXAGON_TILES_PER_Col = 20;
+            }
+
             for (let i = 0; i < this.HEXAGON_TILES_PER_Col; i++) {
-                if(i%5==0){
+                if (i % 5 == 0) {
                     selectedColor = this.selectColor();
                 }
-                if(i>=15 && (j==4 || j==5)){
+                if (i >= 15 && (j == 4 || j == 5)) {
                     selectedColor = 0;
                 }
-                if(i>=15 && (j==3 || j==7)){
-                    selectedColor = 3;
-                }
-                if(i>=15 && (j==6)||((i>=10 && i<15) && (j==2))){
-                    selectedColor = 4;
-                }
+                // if(i>=15 && (j==3 || j==7)){
+                //     selectedColor = 2;
+                // }
+                // if(i>=15 && (j==6)||((i>=10 && i<15))){
+                //     selectedColor = 3;
+                // }
                 const hexagonTile = instantiate(this.TilePrefab);
                 this.placeColor(hexagonTile.children[0], selectedColor);
                 hexagonTile.parent = parentNode;
@@ -68,7 +76,7 @@ export class TileCreation extends Component {
                 hexagonTile.name = selectedColor.toString();
                 setdata.push(selectedColor);
             }
-            
+
             this.setArrayData.push(setdata);
             this.colContainers.push(this.node.children[j])
         }
