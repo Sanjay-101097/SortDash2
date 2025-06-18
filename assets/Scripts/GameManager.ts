@@ -90,9 +90,9 @@ export class GameManager extends Component {
         this.Canvas.active = true;
         let nodeToAnimate = this.Canvas.getChildByName("Label");
         const zoomIn = tween(nodeToAnimate)
-            .to(0.8, { scale: v3(1.1, 1.1, 1.1) });
+            .to(0.8, { scale: v3(0.7,0.7, 0.7) });
         const zoomOut = tween(nodeToAnimate)
-            .to(0.8, { scale: v3(0.9, 0.9, 0.9) });
+            .to(0.8, { scale: v3(0.6, 0.6, 0.6) });
         tween(nodeToAnimate)
             .sequence(zoomIn, zoomOut)
             .union()
