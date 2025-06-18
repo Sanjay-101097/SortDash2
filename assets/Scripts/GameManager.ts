@@ -116,7 +116,7 @@ export class GameManager extends Component {
         }
 
         let nodeToAnimate = this.Canvas.getChildByName("BubbleIdle")
-        nodeToAnimate.setPosition(-178+ xdiff , -172 + ydiff)
+        nodeToAnimate.setPosition(-178+ xdiff , -222 + ydiff)
         const change = tween(nodeToAnimate).delay(0.3)
             .call(() => {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[1];
@@ -126,9 +126,9 @@ export class GameManager extends Component {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[0];
             })
         const In = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-8 , -172 + ydiff, 1.1) });
+            .to(0.8, { position: v3(-8 , -222 + ydiff, 1.1) });
         const Out = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-178+ xdiff , -172 + ydiff, 0) });
+            .to(0.8, { position: v3(-178+ xdiff , -222 + ydiff, 0) });
         tween(nodeToAnimate)
             .sequence(change, In, change, Out)
             .union()
