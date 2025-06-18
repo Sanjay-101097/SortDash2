@@ -64,7 +64,7 @@ export class TileCreation extends Component {
                 const hexagonTile = instantiate(this.TilePrefab);
                 this.placeColor(hexagonTile.children[0], selectedColor);
                 hexagonTile.parent = parentNode;
-                hexagonTile.setPosition(0, i * 0.1, 0);
+                hexagonTile.setPosition(0, i * 0.2, 0);
                 hexagonTile.name = selectedColor.toString();
                 setdata.push(selectedColor);
             }
