@@ -53,14 +53,14 @@ export class TileCreation extends Component {
             } else if (j == 10 || j == 8) {
                 this.HEXAGON_TILES_PER_Col = 10;
             } else {
-                this.HEXAGON_TILES_PER_Col = 20;
+                this.HEXAGON_TILES_PER_Col = 15;
             }
 
             for (let i = 0; i < this.HEXAGON_TILES_PER_Col; i++) {
                 if (i % 5 == 0) {
                     selectedColor = this.selectColor();
                 }
-                if (i >= 15 && (j == 4 || j == 5)) {
+                if (i >= 10 && (j == 4 || j == 5)) {
                     selectedColor = 0;
                 }
                 // if(i>=15 && (j==3 || j==7)){

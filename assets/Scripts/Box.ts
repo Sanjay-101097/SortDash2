@@ -68,7 +68,7 @@ export class Box extends Component {
         let parentNode;
         if (this.node.parent.name == "Main") {
             parentNode = this.node.parent;
-            this.endPosition = this.busarray[idx];
+            this.endPosition = this.busarray[9-idx];
             this.amplitude = 2;
             this.frequency = 0.5
             this.dir = 1;
@@ -82,7 +82,7 @@ export class Box extends Component {
                 this.endPosition.x -= (idx) * 0.14;
                 this.endPosition.z -= (idx) * 0.14;
             } else {
-                this.endPosition = this.busarray[idx];
+                this.endPosition = this.busarray[9-idx];
 
             }
 
@@ -114,7 +114,7 @@ export class Box extends Component {
         if (pos.z < -1.6 && !this.fromcollector) {
 
 
-        } if (parentIdx >= 0 && parentIdx <= 4) {
+        } if (parentIdx >= 2 && parentIdx <= 4) {
             Vec3.cross(this.perpendicular, this.direction, worldUp);
         } else {
             Vec3.cross(this.perpendicular, this.direction, new Vec3(-1, 0, 0));
@@ -183,8 +183,8 @@ export class Box extends Component {
             this.isanim = false;
 
             if (this.isBus &&
-                this.node.position.x <= this.busarray[this.idx].x + 0.01 &&
-                this.node.position.x >= this.busarray[this.idx].x - 0.01) {
+                this.node.position.x <= this.busarray[9-this.idx].x + 0.01 &&
+                this.node.position.x >= this.busarray[9-this.idx].x - 0.01) {
 
                 const worldPos = this.node.getWorldPosition();
                 const worldRot = this.node.getWorldRotation();

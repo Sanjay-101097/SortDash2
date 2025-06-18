@@ -107,7 +107,7 @@ export class GameManager extends Component {
     sethandpos() {
         const visibleSize = view.getVisibleSizeInPixel();
         const height = window.innerHeight;
-        let xdiff = 40;
+        let xdiff = 0;
         let ydiff = 60;
 
         if (height >= 800) {
@@ -116,7 +116,7 @@ export class GameManager extends Component {
         }
 
         let nodeToAnimate = this.Canvas.getChildByName("BubbleIdle")
-        nodeToAnimate.setPosition(-198 + xdiff, -192 + ydiff)
+        nodeToAnimate.setPosition(-228 + xdiff, -132 + ydiff)
         const change = tween(nodeToAnimate).delay(0.3)
             .call(() => {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[1];
@@ -126,9 +126,9 @@ export class GameManager extends Component {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[0];
             })
         const In = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-8, -192 + ydiff, 1.1) });
+            .to(0.8, { position: v3(-28, -132 + ydiff, 1.1) });
         const Out = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-198 + xdiff, -192 + ydiff, 0) });
+            .to(0.8, { position: v3(-228 + xdiff, -132 + ydiff, 0) });
         tween(nodeToAnimate)
             .sequence(change, In, change, Out)
             .union()
@@ -302,7 +302,7 @@ export class GameManager extends Component {
                     this.scheduleOnce(() => {
                         this.audioSource.playOneShot(this.Audioclips[1], 1);
                         tween(this.BusArr[this.currentBusidx])
-                            .to(0.15, { position: new Vec3(-6.096, 4.751, -14.643) }, { easing: 'quadInOut' })
+                            .to(0.15, { position: new Vec3(11.589, 4.751, 3.042) }, { easing: 'quadInOut' })
                             .call(() => {
                                 this.currentBusidx += 1;
                                 if (this.currentBusidx == 3) this.currentBusidx = 0;
@@ -313,13 +313,13 @@ export class GameManager extends Component {
                                         this.Bidx = 0;
                                         this.CheckCollector();
                                         this.enable = true;
-                                        Fbus.setPosition(10.021, 4.751, 1.474);
+                                        Fbus.setPosition(-0.052, 4.751, -8.599);
                                         Fbus.children?.forEach((child) => child.destroy());
                                     })
                                     .start();
 
                                 tween(this.BusArr[Lbus])
-                                    .to(0.15, { position: new Vec3(7.08, 4.751, -1.467) }, { easing: 'quadInOut' })
+                                    .to(0.15, { position: new Vec3(1.895, 4.751, -6.652) }, { easing: 'quadInOut' })
                                     .start();
                             })
                             .start();
@@ -442,7 +442,7 @@ export class GameManager extends Component {
                                 this.currentBusidx + 2;
 
                         tween(Fbus)
-                            .to(0.15, { position: new Vec3(-6.096, 4.751, -14.643) }, { easing: 'quadInOut' })
+                            .to(0.15, { position: new Vec3(11.589, 4.751, 3.042) }, { easing: 'quadInOut' })
                             .call(() => {
                                 this.currentBusidx = (this.currentBusidx + 1) % 3;
                                 const newBus = this.BusArr[this.currentBusidx];
@@ -457,13 +457,13 @@ export class GameManager extends Component {
                                             onComplete?.();
                                         });
 
-                                        Fbus.setPosition(10.021, 4.751, 1.474);
+                                        Fbus.setPosition(-0.052, 4.751, -8.599);
                                         Fbus.children?.forEach(child => child.destroy());
                                     })
                                     .start();
 
                                 tween(this.BusArr[Lbus])
-                                    .to(0.15, { position: new Vec3(7.08, 4.751, -1.467) }, { easing: 'quadInOut' })
+                                    .to(0.15, { position: new Vec3(1.895, 4.751, -6.652) }, { easing: 'quadInOut' })
                                     .start();
                             })
                             .start();
