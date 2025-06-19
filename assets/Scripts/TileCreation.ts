@@ -60,15 +60,15 @@ export class TileCreation extends Component {
                 if (i % 5 == 0) {
                     selectedColor = this.selectColor();
                 }
-                if (i >= 10 && (j == 4 || j == 5)) {
+                if ((i>=10|| (i>=0 &&i<5)) && (j == 4 || j == 5|| j == 7)) {
                     selectedColor = 0;
                 }
-                // if(i>=15 && (j==3 || j==7)){
-                //     selectedColor = 2;
-                // }
-                // if(i>=15 && (j==6)||((i>=10 && i<15))){
-                //     selectedColor = 3;
-                // }
+                if((i>=10|| (i>=0 &&i<5)) && (j==3 || j==2)){
+                    selectedColor = 2;
+                }
+                if((i>=10|| (i>=0 &&i<5)) && (j==6 || j == 9)){
+                    selectedColor = 3;
+                }
                 const hexagonTile = instantiate(this.TilePrefab);
                 this.placeColor(hexagonTile.children[0], selectedColor);
                 hexagonTile.parent = parentNode;

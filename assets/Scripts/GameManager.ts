@@ -302,24 +302,24 @@ export class GameManager extends Component {
                     this.scheduleOnce(() => {
                         this.audioSource.playOneShot(this.Audioclips[1], 1);
                         tween(this.BusArr[this.currentBusidx])
-                            .to(0.15, { position: new Vec3(11.589, 4.751, 3.042) }, { easing: 'quadInOut' })
+                            .to(0.15, { position: new Vec3(11.561, 4.635, 3.416) }, { easing: 'quadInOut' })
                             .call(() => {
                                 this.currentBusidx += 1;
                                 if (this.currentBusidx == 3) this.currentBusidx = 0;
 
                                 tween(this.BusArr[this.currentBusidx])
-                                    .to(0.15, { position: new Vec3(4.386, 4.751, -4.161) }, { easing: 'quadInOut' })
+                                    .to(0.15, { position: new Vec3(4.185, 4.635, -3.96) }, { easing: 'quadInOut' })
                                     .call(() => {
                                         this.Bidx = 0;
                                         this.CheckCollector();
                                         this.enable = true;
-                                        Fbus.setPosition(-0.052, 4.751, -8.599);
+                                        Fbus.setPosition(-0.253, 4.635, -8.398);
                                         Fbus.children?.forEach((child) => child.destroy());
                                     })
                                     .start();
 
                                 tween(this.BusArr[Lbus])
-                                    .to(0.15, { position: new Vec3(1.895, 4.751, -6.652) }, { easing: 'quadInOut' })
+                                    .to(0.15, { position: new Vec3(1.694, 4.635, -6.451) }, { easing: 'quadInOut' })
                                     .start();
                             })
                             .start();
@@ -442,13 +442,13 @@ export class GameManager extends Component {
                                 this.currentBusidx + 2;
 
                         tween(Fbus)
-                            .to(0.15, { position: new Vec3(11.589, 4.751, 3.042) }, { easing: 'quadInOut' })
+                            .to(0.15, { position: new Vec3(11.561, 4.635, 3.416) }, { easing: 'quadInOut' })
                             .call(() => {
                                 this.currentBusidx = (this.currentBusidx + 1) % 3;
                                 const newBus = this.BusArr[this.currentBusidx];
 
                                 tween(newBus)
-                                    .to(0.15, { position: new Vec3(4.386, 4.751, -4.161) }, { easing: 'quadInOut' })
+                                    .to(0.15, { position: new Vec3(4.185, 4.635, -3.96) }, { easing: 'quadInOut' })
                                     .call(() => {
                                         this.Bidx = 0;
                                         this.CheckCollector(() => {
@@ -457,13 +457,13 @@ export class GameManager extends Component {
                                             onComplete?.();
                                         });
 
-                                        Fbus.setPosition(-0.052, 4.751, -8.599);
+                                        Fbus.setPosition(-0.253, 4.635, -8.398);
                                         Fbus.children?.forEach(child => child.destroy());
                                     })
                                     .start();
 
                                 tween(this.BusArr[Lbus])
-                                    .to(0.15, { position: new Vec3(1.895, 4.751, -6.652) }, { easing: 'quadInOut' })
+                                    .to(0.15, { position: new Vec3(1.694, 4.635, -6.451) }, { easing: 'quadInOut' })
                                     .start();
                             })
                             .start();
@@ -572,7 +572,7 @@ export class GameManager extends Component {
     update(deltaTime: number) {
         if (this.enable) {
             this.dt += deltaTime;
-            if (this.dt >= 30 || this.wrongCnt >= 15) {
+            if (this.dt >= 28 || this.wrongCnt >= 15) {
                 this.Canvas.active = true;
                 this.Canvas2.active = false;
                 this.Canvas.children[1].active = false;
