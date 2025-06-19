@@ -90,9 +90,9 @@ export class GameManager extends Component {
         this.Canvas.active = true;
         let nodeToAnimate = this.Canvas.getChildByName("Label");
         const zoomIn = tween(nodeToAnimate)
-            .to(0.8, { scale: v3(0.7, 0.7, 0.7) });
+            .to(0.8, { scale: v3(1.040, 1.040, 1.040) });
         const zoomOut = tween(nodeToAnimate)
-            .to(0.8, { scale: v3(0.6, 0.6, 0.6) });
+            .to(0.8, { scale: v3(1.039,1.039, 1.039) });
         tween(nodeToAnimate)
             .sequence(zoomIn, zoomOut)
             .union()
@@ -116,7 +116,7 @@ export class GameManager extends Component {
         }
 
         let nodeToAnimate = this.Canvas.getChildByName("BubbleIdle")
-        nodeToAnimate.setPosition(-228 + xdiff, -132 + ydiff)
+        nodeToAnimate.setPosition(-228 + xdiff, -252 + ydiff)
         const change = tween(nodeToAnimate).delay(0.3)
             .call(() => {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[1];
@@ -126,9 +126,9 @@ export class GameManager extends Component {
                 nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[0];
             })
         const In = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-28, -132 + ydiff, 1.1) });
+            .to(0.8, { position: v3(-28, -252 + ydiff, 1.1) });
         const Out = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-228 + xdiff, -132 + ydiff, 0) });
+            .to(0.8, { position: v3(-228 + xdiff, -252 + ydiff, 0) });
         tween(nodeToAnimate)
             .sequence(change, In, change, Out)
             .union()
