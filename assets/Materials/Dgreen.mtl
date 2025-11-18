@@ -5,17 +5,12 @@
   "__editorExtras__": {},
   "_native": "",
   "_effectAsset": {
-    "__uuid__": "a7612b54-35e3-4238-a1a9-4a7b54635839",
+    "__uuid__": "c8f66d17-351a-48da-a12c-0212d28575c4",
     "__expectedType__": "cc.EffectAsset"
   },
   "_techIdx": 0,
   "_defines": [
-    {
-      "USE_INSTANCING": true
-    },
-    {
-      "USE_INSTANCING": true
-    },
+    {},
     {},
     {},
     {},
@@ -76,59 +71,20 @@
           {}
         ]
       }
-    },
-    {
-      "rasterizerState": {},
-      "depthStencilState": {},
-      "blendState": {
-        "targets": [
-          {}
-        ]
-      }
     }
   ],
   "_props": [
     {
-      "baseColor": {
-        "__type__": "cc.Color",
-        "r": 255,
-        "g": 255,
-        "b": 255,
-        "a": 255
-      }
-    },
-    {
       "mainColor": {
         "__type__": "cc.Color",
-        "r": 202,
-        "g": 153,
+        "r": 13,
+        "g": 82,
         "b": 26,
         "a": 255
       },
-      "shadeColor1": {
-        "__type__": "cc.Color",
-        "r": 0,
-        "g": 0,
-        "b": 0,
-        "a": 255
-      },
-      "shadeColor2": {
-        "__type__": "cc.Color",
-        "r": 228,
-        "g": 201,
-        "b": 50,
-        "a": 255
-      },
-      "specular": {
-        "__type__": "cc.Color",
-        "r": 194,
-        "g": 167,
-        "b": 19,
-        "a": 255
-      },
-      "baseFeather": 0.101,
-      "shadeStep": 0.3,
-      "shadeFeather": 1.401
+      "roughness": 0.733,
+      "metallic": 0.217,
+      "specularIntensity": 1
     },
     {},
     {},

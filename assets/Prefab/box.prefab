@@ -124,7 +124,7 @@
     },
     "_materials": [
       {
-        "__uuid__": "7943b9f7-5092-448b-a360-b4f1a7586170",
+        "__uuid__": "b778dee9-3ec2-4c8b-b677-1d4c93b67572",
         "__expectedType__": "cc.Material"
       }
     ],
@@ -193,7 +193,7 @@
       "__id__": 1
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 8

@@ -2,16 +2,19 @@
   "__type__": "cc.Material",
   "_name": "",
   "_objFlags": 0,
+  "__editorExtras__": {},
   "_native": "",
   "_effectAsset": {
-    "__uuid__": "1baf0fc9-befa-459c-8bdd-af1a450a0319",
+    "__uuid__": "9b20a514-6cc3-49de-b216-b6b863046249",
     "__expectedType__": "cc.EffectAsset"
   },
   "_techIdx": 0,
   "_defines": [
-    {
-      "USE_INSTANCING": true
-    },
+    {},
+    {},
+    {},
+    {},
+    {},
     {},
     {}
   ],
@@ -25,20 +28,98 @@
         ]
       }
     },
-    {},
-    {}
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    }
   ],
   "_props": [
     {
-      "metallic": 1,
-      "emissive": {
+      "lineWidth": 13.2
+    },
+    {
+      "mainColor": {
         "__type__": "cc.Color",
-        "r": 173,
-        "g": 173,
-        "b": 173,
+        "r": 237,
+        "g": 212,
+        "b": 204,
         "a": 255
+      },
+      "shadeColor1": {
+        "__type__": "cc.Color",
+        "r": 226,
+        "g": 194,
+        "b": 184,
+        "a": 255
+      },
+      "shadeColor2": {
+        "__type__": "cc.Color",
+        "r": 138,
+        "g": 119,
+        "b": 112,
+        "a": 255
+      },
+      "specular": {
+        "__type__": "cc.Color",
+        "r": 0,
+        "g": 0,
+        "b": 0,
+        "a": 61
       }
     },
+    {},
+    {},
+    {},
     {},
     {}
   ]

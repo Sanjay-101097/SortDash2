@@ -43,14 +43,14 @@ export class TileCreation extends Component {
 
         let setIndexData = [];
         for (let j = 0; j < this.NUM_Col; j++) {
-            let selectedColor = this.selectColor();
+            let selectedColor
             const parentNode = this.node.children[j];
             let setdata = []
             setIndexData.push(j);
 
-            if (j == 0 || j == 11 || j == 9 || j == 3) {
-                this.HEXAGON_TILES_PER_Col = 15;
-            } else if (j == 10 || j == 8) {
+            if (j == 0 || j == 11 || j == 2 || j == 3) {
+                this.HEXAGON_TILES_PER_Col = 5;
+            } else if (j == 1 || j == 8) {
                 this.HEXAGON_TILES_PER_Col = 10;
             } else {
                 this.HEXAGON_TILES_PER_Col = 15;
@@ -60,15 +60,7 @@ export class TileCreation extends Component {
                 if (i % 5 == 0) {
                     selectedColor = this.selectColor();
                 }
-                if ((i>=10|| (i>=0 &&i<5)) && (j == 4 || j == 5|| j == 7)) {
-                    selectedColor = 0;
-                }
-                if((i>=10|| (i>=0 &&i<5)) && (j==3 || j==2)){
-                    selectedColor = 2;
-                }
-                if((i>=10|| (i>=0 &&i<5)) && (j==6 || j == 9)){
-                    selectedColor = 3;
-                }
+                
                 const hexagonTile = instantiate(this.TilePrefab);
                 this.placeColor(hexagonTile.children[0], selectedColor);
                 hexagonTile.parent = parentNode;
@@ -95,16 +87,19 @@ export class TileCreation extends Component {
 
     }
 
+    colors=[0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3]
+    colorid = 0
+
     selectColor(): number {
         if (this.color.length === 0) {
             this.color = [...this.originalColor];
         }
-        const index = Math.floor(Math.random() * this.color.length);
+        const index = this.colors[this.colorid];
         const selectedColor = this.color[index];
-        this.color[index] = this.color[this.color.length - 1];
-        this.color.pop();
-
-        return selectedColor;
+        // this.color[index] = this.color[this.color.length - 1];
+        // this.color.pop();
+        this.colorid +=1
+        return index;
     }
 }
 
