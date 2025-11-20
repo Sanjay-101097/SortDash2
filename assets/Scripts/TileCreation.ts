@@ -42,9 +42,9 @@ export class TileCreation extends Component {
 
 
         let setIndexData = [];
-        for (let j = 0; j < this.NUM_Col; j++) {
+        for (let j = 0; j < 3; j++) {
             let selectedColor
-            const parentNode = this.node.children[j];
+            const parentNode = this.node.children[0].children[j];
             let setdata = []
             setIndexData.push(j);
 
@@ -87,8 +87,11 @@ export class TileCreation extends Component {
 
     }
 
-    colors=[0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0,0,3,3]
+    colors=[0,0,3,3]
     colorid = 0
+    Lcolor = {L1:{0:{0:5,}}}
+
+    // r-0,green-1, lblue -2,y-3,blue-4,dg-5,p-6,gray -7
 
     selectColor(): number {
         if (this.color.length === 0) {

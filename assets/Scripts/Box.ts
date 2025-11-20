@@ -1,5 +1,5 @@
 
-import { _decorator, BlockInputEvents, Component, Node, Quat, tween, Vec3 } from 'cc';
+import { _decorator, BlockInputEvents, Component, director, Node, Quat, tween, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 /**
@@ -23,6 +23,7 @@ export class Box extends Component {
     startPosition: Vec3;
 
     endPosition: Vec3;
+    public parent: Node;
 
 
     public duration: number = 0.3;
@@ -50,11 +51,75 @@ export class Box extends Component {
 
     reset(idx) {
         let pos = this.collector[0].clone()
-            pos.x -= (idx) * 0.14;
-            pos.z -= (idx) * 0.14;
+        pos.x -= (idx) * 0.14;
+        pos.z -= (idx) * 0.14;
         tween(this.node)
             .to(0.05, { position: pos }, { easing: 'sineIn' })
             .start();
+    }
+
+    anim2() {
+
+        const startPos = this.node.worldPosition.clone();
+    const startRot = this.node.worldRotation.clone();
+
+    // -----------------------------
+    // 2) Detach safely to world space
+    // -----------------------------
+    this.node.setParent(director.getScene());
+    this.node.worldPosition = startPos;
+    this.node.worldRotation = startRot;
+
+    // -----------------------------
+    // 3) Target world transform
+    // -----------------------------
+    const endPos = this.parent.worldPosition.clone();
+    const endRot = this.parent.worldRotation.clone();
+
+    // -----------------------------
+    // 4) Create a midpoint for jump arc
+    //    (You can adjust height)
+    // -----------------------------
+    const midPos = new Vec3(
+        (startPos.x + endPos.x) * 0.5,
+        (startPos.y + endPos.y) * 0.5+ 1.0 ,   // jump height  
+        (startPos.z + endPos.z) * 0.5
+    );
+
+    // Rotation at midpoint (optional)
+    const midRot = new Quat();
+    Quat.slerp(midRot, startRot, endRot, 0.5);
+
+    // -----------------------------
+    // 5) Jump tween: start → mid → end
+    // -----------------------------
+    tween(this.node)
+        // Jump up
+        .to(0.15, {
+            worldPosition: midPos,
+            worldRotation: midRot,
+        })
+
+        // Fall down to target
+        .to(0.15, {
+            worldPosition: endPos,
+            worldRotation: endRot,
+        }, { easing: "quadIn" })
+
+        // -----------------------------
+        // 6) Reparent safely (no snapping)
+        // -----------------------------
+        .call(() => {
+            const finalPos = this.node.worldPosition.clone();
+            const finalRot = this.node.worldRotation.clone();
+
+            this.node.setParent(this.parent);
+
+            this.node.worldPosition = finalPos;
+            this.node.worldRotation = finalRot;
+            this.node.setScale(1,1,1)
+        })
+        .start();
     }
 
     anim(idx, node) {
@@ -68,9 +133,9 @@ export class Box extends Component {
         let parentNode;
         if (this.node.parent.name == "Main") {
             parentNode = this.node.parent;
-           this.endPosition = this.busarray[9].clone()
-                this.endPosition.x += (idx) * 0.14;
-                this.endPosition.z += (idx) * 0.14;
+            this.endPosition = this.busarray[9].clone()
+            this.endPosition.x += (idx) * 0.14;
+            this.endPosition.z += (idx) * 0.14;
             this.amplitude = 2;
             this.frequency = 0.5
             this.dir = 1;
@@ -136,86 +201,86 @@ export class Box extends Component {
     private readonly referenceDuration: number = 1;
     enabl = true;
     update(deltaTime: number) {
-        if (!this.isanim) return;
+        // if (!this.isanim) return;
+
+        // // this.timeElapsed += deltaTime;
+        // // let t = this.timeElapsed / this.duration;
+        // // if (t > 1) t = 1;
 
         // this.timeElapsed += deltaTime;
         // let t = this.timeElapsed / this.duration;
         // if (t > 1) t = 1;
 
-        this.timeElapsed += deltaTime;
-        let t = this.timeElapsed / this.duration;
-        if (t > 1) t = 1;
+        // const basePos = new Vec3();
+        // Vec3.lerp(basePos, this.startPosition, this.endPosition, t);
 
-        const basePos = new Vec3();
-        Vec3.lerp(basePos, this.startPosition, this.endPosition, t);
+        // const waveProgress = this.timeElapsed * this.frequency;
+        // const sineOffset = Math.sin(Math.PI * t) * this.amplitude * this.dir;
 
-        const waveProgress = this.timeElapsed * this.frequency;
-        const sineOffset = Math.sin(Math.PI * t) * this.amplitude * this.dir;
+        // const offset = new Vec3();
+        // Vec3.multiplyScalar(offset, this.perpendicular, sineOffset);
 
-        const offset = new Vec3();
-        Vec3.multiplyScalar(offset, this.perpendicular, sineOffset);
+        // const finalPos = new Vec3();
+        // Vec3.add(finalPos, basePos, offset);
+        // this.node.setPosition(finalPos);
 
-        const finalPos = new Vec3();
-        Vec3.add(finalPos, basePos, offset);
-        this.node.setPosition(finalPos);
-
-        // Stop only when fully done
-        if (t >= 1) {
-            // this.node.setPosition(this.endPosition); // Optional: snap to final pos
-            this.isanim = false;
-        }
+        // // Stop only when fully done
+        // if (t >= 1) {
+        //     // this.node.setPosition(this.endPosition); // Optional: snap to final pos
+        //     this.isanim = false;
+        // }
 
 
-        // Scale animation
-        const scale = 1 + (0.7 - 1) * t;
-        this.node.setScale(scale, scale, scale);
+        // // Scale animation
+        // const scale = 1 + (0.7 - 1) * t;
+        // this.node.setScale(scale, scale, scale);
 
-        // Rotation interpolation
-        this.rotationElapsed += deltaTime;
-        let rt = this.rotationElapsed / this.rotationDuration;
-        if (rt > 1) rt = 1;
+        // // Rotation interpolation
+        // this.rotationElapsed += deltaTime;
+        // let rt = this.rotationElapsed / this.rotationDuration;
+        // if (rt > 1) rt = 1;
 
-        const lerpAngle = (start: number, end: number, alpha: number) => start + (end - start) * alpha;
-        const currentEuler = this.node.eulerAngles;
-        this.node.eulerAngles = new Vec3(
-            lerpAngle(currentEuler.x, this.collectorRotation.x, rt),
-            lerpAngle(currentEuler.y, this.collectorRotation.y, rt),
-            lerpAngle(currentEuler.z, this.collectorRotation.z, rt)
-        );
+        // const lerpAngle = (start: number, end: number, alpha: number) => start + (end - start) * alpha;
+        // const currentEuler = this.node.eulerAngles;
+        // this.node.eulerAngles = new Vec3(
+        //     lerpAngle(currentEuler.x, this.collectorRotation.x, rt),
+        //     lerpAngle(currentEuler.y, this.collectorRotation.y, rt),
+        //     lerpAngle(currentEuler.z, this.collectorRotation.z, rt)
+        // );
 
-        // Reparenting logic
-        if (this.timeElapsed >= this.duration) {
-            this.isanim = false;
+        // // Reparenting logic
+        // if (this.timeElapsed >= this.duration) {
+        //     this.isanim = false;
 
-            if (this.isBus &&
-                this.node.position.x <= (this.busarray[9].x +this.idx*0.14 )+ 0.01 &&
-                this.node.position.x >= (this.busarray[9].x +this.idx*0.14 ) - 0.01) {
+        //     if (this.isBus &&
+        //         this.node.position.x <= (this.busarray[9].x + this.idx * 0.14) + 0.01 &&
+        //         this.node.position.x >= (this.busarray[9].x + this.idx * 0.14) - 0.01) {
 
-                const worldPos = this.node.getWorldPosition();
-                const worldRot = this.node.getWorldRotation();
+        //         const worldPos = this.node.getWorldPosition();
+        //         const worldRot = this.node.getWorldRotation();
 
-                const localPos = new Vec3();
-                this.Bus.inverseTransformPoint(localPos, worldPos);
+        //         const localPos = new Vec3();
+        //         this.Bus.inverseTransformPoint(localPos, worldPos);
 
-                const worldRotQuat = new Quat();
-                this.node.getWorldRotation(worldRotQuat);
+        //         const worldRotQuat = new Quat();
+        //         this.node.getWorldRotation(worldRotQuat);
 
-                const parentWorldRot = new Quat();
-                this.Bus.getWorldRotation(parentWorldRot);
+        //         const parentWorldRot = new Quat();
+        //         this.Bus.getWorldRotation(parentWorldRot);
 
-                const parentWorldRotInv = new Quat();
-                Quat.invert(parentWorldRotInv, parentWorldRot);
+        //         const parentWorldRotInv = new Quat();
+        //         Quat.invert(parentWorldRotInv, parentWorldRot);
 
-                const localRot = new Quat();
-                Quat.multiply(localRot, parentWorldRotInv, worldRotQuat);
+        //         const localRot = new Quat();
+        //         Quat.multiply(localRot, parentWorldRotInv, worldRotQuat);
 
-                this.node.removeFromParent();
-                this.Bus.addChild(this.node);
+        //         this.node.removeFromParent();
+        //         this.Bus.addChild(this.node);
 
-                this.node.setPosition(localPos);
-                this.node.setRotationFromEuler(0, 0, 90);
-            }
-        }
+        //         this.node.setPosition(localPos);
+        //         this.node.setRotationFromEuler(0, 0, 90);
+        //     }
+        // }
     }
 
 
