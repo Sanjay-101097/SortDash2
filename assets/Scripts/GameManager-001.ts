@@ -28,7 +28,7 @@ export class GameManager extends Component {
     Bolock: Node = null;
 
     @property(Node)
-    Plane: Node = null;
+    Hand: Node = null;
 
     @property(Node)
     particle: Node = null;
@@ -74,7 +74,7 @@ export class GameManager extends Component {
 
     collectorArr: Node[] = [];
     busArr: Node[] = [];
-    buscolor: string[] = ["55", "33", "11", "00", "15", "33", "77", "60", "52", "33", "22", "77","65"];
+    buscolor: string[] = ["55", "33", "11", "00", "15", "33", "77", "60", "52", "33", "22", "77", "65"];
     currentBusidx = 0;
     colliderinfo: Vec2[] = [new Vec2(2.7, 5.6), new Vec2(2, 4.2), , new Vec2(1.3, 2.7)]
     colliderpos: number[] = [4.7, 3.4, 2, 0.6]
@@ -122,25 +122,71 @@ export class GameManager extends Component {
             ydiff = 40
         }
 
-        let nodeToAnimate = this.CTA.parent.getChildByName("BubbleIdle")
-        nodeToAnimate.setPosition(-228 + xdiff, -252 + ydiff)
-        const change = tween(nodeToAnimate).delay(0.3)
-            .call(() => {
-                nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[1];
-            })
+        let pos: Vec3 = this.Findmatchingpos()
+        let nodeToAnimate = this.Hand
+
+        nodeToAnimate.active = true;
+        let localPos = new Vec3();
+        nodeToAnimate.parent!.inverseTransformPoint(localPos, pos);
+
+        nodeToAnimate.setPosition(localPos.x, localPos.y + 0.5, localPos.z + 0.2);
+
+
+        // nodeToAnimate.setPosition(pos.x, pos.y + 0.2, pos.z + 0.2)
+        const changeIn = tween(nodeToAnimate)
             .delay(0.3)
             .call(() => {
-                nodeToAnimate.getComponent(Sprite).spriteFrame = this.HandSF[0];
-            })
-        const In = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-28, -252 + ydiff, 1.1) });
-        const Out = tween(nodeToAnimate)
-            .to(0.8, { position: v3(-228 + xdiff, -252 + ydiff, 0) });
+                nodeToAnimate.children[1].active = false;
+                nodeToAnimate.children[0].active = true;
+            });
+
+        const changeOut = tween(nodeToAnimate)
+            .delay(0.3)
+            .call(() => {
+                nodeToAnimate.children[1].active = true;
+                nodeToAnimate.children[0].active = false;
+            });
+
         tween(nodeToAnimate)
-            .sequence(change, change)
+            .sequence(changeOut, changeIn)
             .union()
             .repeatForever()
             .start();
+    }
+
+    Findmatchingpos(): Vec3 {
+        let curbus = Number(this.BusArr[this.currentBusidx].name)
+        let level = this.Levels[this.crntLevel - 1]
+        let pos;
+        let node
+
+        for (let i = 0; i < level.children.length; i++) {
+            node = level.children[i].children[level.children[i].children.length - 1];
+            if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 5) {
+                pos = node.worldPosition.clone();
+                return pos;
+            } else if (Number(node.name) === (curbus % 10) && this.Snthalfidx < 5) {
+                pos = node.worldPosition.clone();
+                return pos;
+            }
+        }
+
+        for (let i = 0; i < level.children.length; i++) {
+
+            for (let j = 0; j < level.children[i].children.length - 1; j++) {
+                node = level.children[i].children[j];
+                if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 5) {
+                    pos = level.children[i].children[level.children[i].children.length - 1].worldPosition.clone();
+                    return pos;
+                } else if (Number(node.name) === (curbus % 10) && this.Snthalfidx < 5) {
+                    pos = level.children[i].children[level.children[i].children.length - 1].worldPosition.clone();
+                    return pos;
+                }
+            }
+
+        }
+
+
     }
 
 
@@ -180,8 +226,8 @@ export class GameManager extends Component {
         const mask = 0xffffffff; // Detect all layers (default)
         const maxDistance = 1000; // Maximum ray distance
         const queryTrigger = true; // Include trigger colliders
-
-        this.CTA.parent.getChildByName("BubbleIdle").active = false;
+        Tween.stopAllByTarget(this.Hand);
+        this.Hand.active = false;
         this.CTA.parent.getChildByName("lable").active = false;
         if (PhysicsSystem.instance.raycastClosest(ray, mask, maxDistance, queryTrigger)) {
 
@@ -193,8 +239,11 @@ export class GameManager extends Component {
             if (node.children.length > 1) {
                 this.audioSource.playOneShot(this.Audioclips[0], 1);
                 this.Cardmovement(node)
-
                 this.scheduleOnce(() => {
+                    this.enableidle = true;
+                }, 1.4)
+                this.scheduleOnce(() => {
+
                     if (!this.collectoranim)
                         this.isAnimating = false;
                 }, 0.4)
@@ -265,8 +314,8 @@ export class GameManager extends Component {
             if (this.Bix >= 10) {
                 this.scheduleOnce(() => {
                     this.audioSource.playOneShot(this.Audioclips[1], 1);
-                this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
-                this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play()
+                    this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
+                    this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play()
                 }, 0.3)
                 this.Bix = 0
                 this.crtCnt += 1
@@ -313,20 +362,20 @@ export class GameManager extends Component {
 
     }
 
-    CTAcall(){
+    CTAcall() {
         this.CTA.active = true;
-                    let icon = this.CTA.children[1];
-                    
-                    let playbutton = this.CTA.children[2];
-                    tween(icon).delay(0.2).to(0.3, { scale: v3(1, 1.2, 1) }, { easing: "quadIn" }).to(0.3, { scale: v3(1.2, 1, 1) }, { easing: "quadIn" }).to(0.3, { scale: v3(1, 1, 1) }, { easing: "quadIn" }).start()
-                    tween(playbutton)
-                        .repeatForever(
-                            tween()
-                                .to(0.6, { scale: new Vec3(1.1, 1.1, 1) }, { easing: 'sineInOut' })
-                                .to(0.6, { scale: new Vec3(1.0, 1.0, 1) }, { easing: 'sineInOut' })
-                        )
-                        .start();
-                    this.Canvas2.active = false;
+        let icon = this.CTA.children[1];
+
+        let playbutton = this.CTA.children[2];
+        tween(icon).delay(0.2).to(0.3, { scale: v3(1, 1.2, 1) }, { easing: "quadIn" }).to(0.3, { scale: v3(1.2, 1, 1) }, { easing: "quadIn" }).to(0.3, { scale: v3(1, 1, 1) }, { easing: "quadIn" }).start()
+        tween(playbutton)
+            .repeatForever(
+                tween()
+                    .to(0.6, { scale: new Vec3(1.1, 1.1, 1) }, { easing: 'sineInOut' })
+                    .to(0.6, { scale: new Vec3(1.0, 1.0, 1) }, { easing: 'sineInOut' })
+            )
+            .start();
+        this.Canvas2.active = false;
     }
 
     resetbusslots(bus: Node) {
@@ -384,8 +433,8 @@ export class GameManager extends Component {
             if (this.Bix >= 10) {
                 this.scheduleOnce(() => {
                     this.audioSource.playOneShot(this.Audioclips[1], 1);
-                this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
-                this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play()
+                    this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
+                    this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play()
                 }, 0.3)
                 this.Bix = 0
                 this.crtCnt += 1
@@ -694,20 +743,29 @@ export class GameManager extends Component {
 
     }
 
-    private enable = false;
-    private dt = 0;
+    idleTime = 5;
+    dt = 0;
+    dt1 = 0;
+    enableidle = false;
 
     update(deltaTime: number) {
-        if (this.firsttouch) {
+        if (this.enableidle) {
             this.dt += deltaTime;
-            if (this.dt >= 50 ) {
-                this.CTAcall()
-                this.firsttouch = false
+            if (this.dt >= this.idleTime) {
+                this.enableidle = false;
+                this.dt = 0;
 
+                this.sethandpos();
             }
         }
-
-
+        if (this.firsttouch) {
+            this.dt1 += deltaTime;
+            if (this.dt1 >= 50) {
+                this.CTA.active = true;
+                this.CTAcall()
+                this.firsttouch = false
+            }
+        }
     }
 }
 

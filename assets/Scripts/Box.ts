@@ -82,7 +82,7 @@ export class Box extends Component {
     // -----------------------------
     const midPos = new Vec3(
         (startPos.x + endPos.x) * 0.5,
-        (startPos.y + endPos.y) * 0.5+ 1.0 ,   // jump height  
+        (startPos.y + endPos.y) * 0.5+ 2.0 ,   // jump height  
         (startPos.z + endPos.z) * 0.5
     );
 
