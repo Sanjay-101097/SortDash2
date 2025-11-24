@@ -31,6 +31,9 @@ export class GameManager extends Component {
     Hand: Node = null;
 
     @property(Node)
+    levelHeader: Node = null;
+
+    @property(Node)
     particle: Node = null;
 
     @property(Node)
@@ -122,7 +125,10 @@ export class GameManager extends Component {
             ydiff = 40
         }
 
+        
+
         let pos: Vec3 = this.Findmatchingpos()
+        if (pos === null) {return;}
         let nodeToAnimate = this.Hand
 
         nodeToAnimate.active = true;
@@ -186,6 +192,8 @@ export class GameManager extends Component {
 
         }
 
+        if (!pos) return null;
+
 
     }
 
@@ -227,6 +235,7 @@ export class GameManager extends Component {
         const maxDistance = 1000; // Maximum ray distance
         const queryTrigger = true; // Include trigger colliders
         Tween.stopAllByTarget(this.Hand);
+        this.dt =0
         this.Hand.active = false;
         this.CTA.parent.getChildByName("lable").active = false;
         if (PhysicsSystem.instance.raycastClosest(ray, mask, maxDistance, queryTrigger)) {
@@ -333,7 +342,9 @@ export class GameManager extends Component {
                             this.crntLevel += 1
                             this.currentBusidx = 0
                             tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
-                                tween(this.Levels[1]).to(0.3, { x: -11.4 }).start()
+                                tween(this.Levels[1]).to(0.6, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
+                                tween(this.levelHeader).to(0.6,{scale:v3(1.2,1.2,1)}).to(0.1,{scale:v3(1,1,1)}).start()
+                                this.idleTime=4
                                 this.setbusColor();
                                 tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
                                     this.checkCollector()
@@ -452,7 +463,9 @@ export class GameManager extends Component {
                             this.currentBusidx = 0
                             tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
                                 this.setbusColor();
-                                tween(this.Levels[1]).to(0.1, { x: -11.4 }).start()
+                                tween(this.Levels[1]).to(0.6, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
+                                tween(this.levelHeader).to(0.6,{scale:v3(1.2,1.2,1)}).to(0.1,{scale:v3(1,1,1)}).start()
+                                this.idleTime=4
                                 tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
                                     this.checkCollector()
                                 }).start()
@@ -743,7 +756,7 @@ export class GameManager extends Component {
 
     }
 
-    idleTime = 5;
+    idleTime = 1.5;
     dt = 0;
     dt1 = 0;
     enableidle = false;
