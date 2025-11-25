@@ -48,6 +48,12 @@ export class Box extends Component {
     public isBus: boolean = false;
     Bus
     fromcollector: boolean = false;
+    public pos;
+    public t;
+
+    protected start(): void {
+        tween(this.node).delay(this.t).to(0.1, { position: this.pos }).start();
+    }
 
     reset(idx) {
         let pos = this.collector[0].clone()

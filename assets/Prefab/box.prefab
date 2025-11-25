@@ -25,7 +25,7 @@
         "__id__": 7
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 12
@@ -193,7 +193,7 @@
       "__id__": 1
     },
     "_children": [],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 8
@@ -205,7 +205,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 0.16396761133603238,
+      "y": 0.142,
       "z": 0
     },
     "_lrot": {
@@ -257,7 +257,7 @@
       "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@fc873",
       "__expectedType__": "cc.Mesh"
     },
-    "_shadowCastingMode": 1,
+    "_shadowCastingMode": 0,
     "_shadowReceivingMode": 1,
     "_shadowBias": 0,
     "_shadowNormalBias": 0,
@@ -283,7 +283,7 @@
       "w": 0
     },
     "_bakeable": false,
-    "_castShadow": true,
+    "_castShadow": false,
     "_receiveShadow": true,
     "_recieveShadow": true,
     "_lightmapSize": 64,

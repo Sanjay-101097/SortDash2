@@ -1,5 +1,6 @@
 
-import { _decorator, Component, instantiate, Material, MeshRenderer, Node, Prefab } from 'cc';
+import { _decorator, Component, instantiate, Material, MeshRenderer, Node, Prefab, tween, v3 } from 'cc';
+import { Box } from './Box';
 const { ccclass, property } = _decorator;
 
 /**
@@ -37,6 +38,8 @@ export class TileCreation extends Component {
         this.tileGenerate();
     }
 
+    tiles = [];
+    tilepos = []
 
     tileGenerate() {
 
@@ -64,7 +67,12 @@ export class TileCreation extends Component {
                 const hexagonTile = instantiate(this.TilePrefab);
                 this.placeColor(hexagonTile.children[0], selectedColor);
                 hexagonTile.parent = parentNode;
-                hexagonTile.setPosition(0, i * 0.2, 0);
+                hexagonTile.setPosition(0, 16, 5);
+                this.tiles.push(hexagonTile);
+                hexagonTile.getComponent(Box).pos = v3(0, i * 0.2, 0);
+                hexagonTile.getComponent(Box).t = 0.3 + (i * 0.06);
+                // this.tilepos.push(v3(0, i * 0.2, 0));
+                hexagonTile.active = true;
                 hexagonTile.name = selectedColor.toString();
                 setdata.push(selectedColor);
             }
@@ -75,7 +83,11 @@ export class TileCreation extends Component {
 
         this.setIdexArrayData.push(setIndexData);
         // this.setArrayData.push(setdata);
-
+        let idx = 0;
+        // this.schedule(()=>{
+        //     tween(this.tiles[idx]).to(0.1, { position: this.tilepos[idx] }).start();
+        //     idx +=1
+        // },0.04,this.tiles.length-1)
 
         console.log("setArrayData", this.setArrayData);
     }

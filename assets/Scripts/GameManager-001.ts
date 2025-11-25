@@ -1,5 +1,5 @@
 
-import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, easing, EventTouch, geometry, Input, input, Material, MeshRenderer, Node, ParticleSystem, PhysicsSystem, RigidBody, Sprite, SpriteFrame, sys, Tween, tween, TweenAction, TweenSystem, v3, Vec2, Vec3, view } from 'cc';
+import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, easing, EventTouch, geometry, Input, input, Material, MeshRenderer, Node, ParticleSystem, PhysicsSystem, RigidBody, Sprite, SpriteFrame, sys, Tween, tween, TweenAction, TweenSystem, UIOpacity, v3, Vec2, Vec3, view } from 'cc';
 import { TileCreation } from './TileCreation';
 import { Box } from './Box';
 import { super_html_playable } from './super_html_playable';
@@ -32,6 +32,9 @@ export class GameManager extends Component {
 
     @property(Node)
     levelHeader: Node = null;
+
+    @property(Node)
+    levelHeaderBG: Node = null;
 
     @property(Node)
     particle: Node = null;
@@ -77,14 +80,14 @@ export class GameManager extends Component {
 
     collectorArr: Node[] = [];
     busArr: Node[] = [];
-    buscolor: string[] = ["55", "33", "11", "00", "15", "33", "77", "60", "52", "33", "22", "77", "65"];
+    buscolor: string[] = ["55", "15", "11", "00", "52", "33", "77", "60", "33", "33", "22", "77", "65"];
     currentBusidx = 0;
     colliderinfo: Vec2[] = [new Vec2(2.7, 5.6), new Vec2(2, 4.2), , new Vec2(1.3, 2.7)]
     colliderpos: number[] = [4.7, 3.4, 2, 0.6]
 
     wrongCnt = 0;
     crtCnt = 0
-    isAnimating: boolean;
+    isAnimating: boolean = false;
 
     crntLevel = 1;
     Collectoridx = 0;
@@ -98,20 +101,22 @@ export class GameManager extends Component {
 
 
         // this.Canvas.active = true;
-        let nodeToAnimate = this.CTA.parent.getChildByName("lable");
-        const zoomIn = tween(nodeToAnimate)
-            .to(0.5, { scale: v3(0.9, 0.9, 0.9) });
-        const zoomOut = tween(nodeToAnimate)
-            .to(0.5, { scale: v3(1, 1, 1) });
-        tween(nodeToAnimate)
-            .sequence(zoomIn, zoomOut)
-            .union()
-            .repeatForever()
-            .start();
+
 
         this.scheduleOnce(() => {
+            let nodeToAnimate = this.CTA.parent.getChildByName("lable");
+            nodeToAnimate.active = true;
+            const zoomIn = tween(nodeToAnimate)
+                .to(0.5, { scale: v3(0.9, 0.9, 0.9) });
+            const zoomOut = tween(nodeToAnimate)
+                .to(0.5, { scale: v3(1, 1, 1) });
+            tween(nodeToAnimate)
+                .sequence(zoomIn, zoomOut)
+                .union()
+                .repeatForever()
+                .start();
             this.sethandpos();
-        }, 0.1)
+        }, 1.2)
     }
 
     sethandpos() {
@@ -125,10 +130,10 @@ export class GameManager extends Component {
             ydiff = 40
         }
 
-        
+
 
         let pos: Vec3 = this.Findmatchingpos()
-        if (pos === null) {return;}
+        if (pos === null) { return; }
         let nodeToAnimate = this.Hand
 
         nodeToAnimate.active = true;
@@ -225,6 +230,7 @@ export class GameManager extends Component {
             // this.BG.play();
         }
 
+
         // Tween.stopAll();
         const mousePos = event.getLocation();
         this.StartingPoint.x = mousePos.x;
@@ -235,7 +241,7 @@ export class GameManager extends Component {
         const maxDistance = 1000; // Maximum ray distance
         const queryTrigger = true; // Include trigger colliders
         Tween.stopAllByTarget(this.Hand);
-        this.dt =0
+        this.dt = 0
         this.Hand.active = false;
         this.CTA.parent.getChildByName("lable").active = false;
         if (PhysicsSystem.instance.raycastClosest(ray, mask, maxDistance, queryTrigger)) {
@@ -251,11 +257,6 @@ export class GameManager extends Component {
                 this.scheduleOnce(() => {
                     this.enableidle = true;
                 }, 1.4)
-                this.scheduleOnce(() => {
-
-                    if (!this.collectoranim)
-                        this.isAnimating = false;
-                }, 0.4)
 
 
             }
@@ -282,6 +283,8 @@ export class GameManager extends Component {
 
 
     Cardmovement(node) {
+        if (this.isAnimating) return;
+        this.isAnimating = true;
         let sIdx = 0;
         let curntbus = this.BusArr[this.currentBusidx]
         // if(curntbus){
@@ -300,6 +303,7 @@ export class GameManager extends Component {
                 this.Snthalfidx += 1;
                 this.Bix += 1
             } else {
+
                 if (this.Collectoridx > 30) {
                     this.CTAcall()
                     return;
@@ -313,8 +317,10 @@ export class GameManager extends Component {
             }
             // node.children[i].getComponent(Box).anim2()
         }
-
+        this.resetCollector()
         let idx = 0
+
+        this.scheduleOnce(() => { this.isAnimating = false; }, 0.06 * ar.length)
 
         this.schedule(() => {
             ar[idx].getComponent(Box).anim2()
@@ -332,6 +338,7 @@ export class GameManager extends Component {
                     let bus = this.BusArr[this.currentBusidx]
                     let buspos = bus.position.clone()
 
+
                     tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
                     tween(bus).delay(0.3).to(0.2, { position: v3(13.457, 4.8, 4.857) }).call(() => {
                         this.resetbusslots(bus)
@@ -341,12 +348,16 @@ export class GameManager extends Component {
                         if (this.crntLevel === 1 && this.crtCnt === 2) {
                             this.crntLevel += 1
                             this.currentBusidx = 0
+                            this.levelHeaderBG.active = true;
+                            tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
+                            tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
                             tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
-                                tween(this.Levels[1]).to(0.6, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
-                                tween(this.levelHeader).to(0.6,{scale:v3(1.2,1.2,1)}).to(0.1,{scale:v3(1,1,1)}).start()
-                                this.idleTime=4
+                                tween(this.Levels[1]).delay(0.6).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
+
+                                this.idleTime = 4
                                 this.setbusColor();
-                                tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+                                tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).call(() => {
+
                                     this.checkCollector()
                                 }).start()
                             }).start()
@@ -362,6 +373,7 @@ export class GameManager extends Component {
                     if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
                         tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
                             this.checkCollector()
+
                         }).start()
                     }
 
@@ -369,6 +381,8 @@ export class GameManager extends Component {
                 }, 1)
             }
         }, 0.06, ar.length - 1)
+
+
         console.log(ar)
 
     }
@@ -392,7 +406,7 @@ export class GameManager extends Component {
     resetbusslots(bus: Node) {
         bus.getChildByName("bus").setScale(1, 1, 1);
         for (let i = 0; i < bus.children.length - 1; i++) {
-            bus.children[i].children[0].destroy()
+            bus.children[i]?.children[0]?.destroy()
         }
     }
 
@@ -433,7 +447,8 @@ export class GameManager extends Component {
         }
 
         this.scheduleOnce(() => {
-            this.resetCollector()
+            if (ar.length > 0)
+                this.resetCollector()
         }, 1)
         let idx = 0
 
@@ -461,12 +476,15 @@ export class GameManager extends Component {
                         if (this.crntLevel === 1 && this.crtCnt === 2) {
                             this.crntLevel += 1
                             this.currentBusidx = 0
+                            this.levelHeaderBG.active = true;
+                            tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
+                            tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
                             tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
                                 this.setbusColor();
-                                tween(this.Levels[1]).to(0.6, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
-                                tween(this.levelHeader).to(0.6,{scale:v3(1.2,1.2,1)}).to(0.1,{scale:v3(1,1,1)}).start()
-                                this.idleTime=4
-                                tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+                                tween(this.Levels[1]).delay(0.6).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
+
+                                this.idleTime = 4
+                                tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).call(() => {
                                     this.checkCollector()
                                 }).start()
                             }).start()
@@ -482,12 +500,14 @@ export class GameManager extends Component {
                     }
                     if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2)
                         tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+
                             this.checkCollector()
                         }).start()
 
                 }, 1)
             }
         }, 0.06, ar.length - 1)
+
 
 
     }
@@ -521,6 +541,8 @@ export class GameManager extends Component {
 
             i++;
         }
+        if (cards.length > 0)
+            this.scheduleOnce(() => { this.checkCollector() }, 0.3)
     }
 
     playBeforeAnimation(node: Node, onComplete: () => void) {
@@ -561,126 +583,7 @@ export class GameManager extends Component {
 
 
 
-    CheckCollector(onComplete?: () => void) {
-        if (this.collectorArr.length >= 5) {
-            this.collectoranim = true;
-            this.isAnimating = true;
-            const matchColor = this.buscolor[this.currentBusidx];
-            const matchedIndices = [];
 
-            // Find all matching indices (groups of 5) where node name matches
-            for (let i = 0; i <= this.collectorArr.length - 5; i += 5) {
-                const node = this.collectorArr[i];
-                if (node.name === matchColor) {
-                    matchedIndices.push(i);
-                }
-            }
-
-            // Limit total tiles to move to 10
-            const maxTilesToMove = 10;
-            let tilesMoved = 0;
-            let globalDelay = 0;
-            let totalRemoved = 0;
-
-            if (matchedIndices.length > 0) {
-                // Collect all tiles that will be animated now
-                const tilesToAnimate = [];
-
-                for (const startIdx of matchedIndices) {
-                    // Skip groups if we have reached limit
-                    if (tilesMoved >= maxTilesToMove) break;
-
-                    const actualIdx = startIdx - totalRemoved;
-                    const count = Math.min(5, maxTilesToMove - tilesMoved); // Only take needed tiles to reach max 10
-                    const movingTiles = this.collectorArr.splice(actualIdx, count);
-
-                    tilesToAnimate.push(...movingTiles);
-                    totalRemoved += count;
-                    tilesMoved += count;
-
-                    globalDelay += count * 0.05;
-                }
-
-                // Schedule animation for tilesToAnimate
-                tilesToAnimate.forEach((tileNode, idx) => {
-                    this.scheduleOnce(() => {
-                        const tile = tileNode.getComponent(Box);
-                        tile.isBus = true;
-                        tile.fromcollector = true;
-                        tile.frequency = 0.5;
-                        tile.anim(this.Bidx, this.BusArr[this.currentBusidx]);
-                        this.Bidx += 1;
-                        this.Cidx -= 1;
-                        this.audioSource.playOneShot(this.Audioclips[4], 1);
-                    }, idx * 0.05);
-                });
-
-                this.scheduleOnce(() => {
-                    for (const remainingTileNode of this.collectorArr) {
-                        const tile = remainingTileNode.getComponent(Box);
-                        tile.reset(this.collectorArr.indexOf(remainingTileNode));
-                    }
-                }, 0.9)
-
-
-                this.scheduleOnce(() => {
-                    if (this.Bidx >= 10) {
-                        this.Bidx = 0;
-                        const Fbus = this.BusArr[this.currentBusidx];
-                        let Lbus = this.currentBusidx === 1 ? 0 :
-                            this.currentBusidx === 2 ? 1 :
-                                this.currentBusidx + 2;
-
-                        tween(Fbus)
-                            .to(0.15, { position: new Vec3(11.561, 4.635, 3.416) }, { easing: 'quadInOut' })
-                            .call(() => {
-                                this.currentBusidx = (this.currentBusidx + 1) % 3;
-                                const newBus = this.BusArr[this.currentBusidx];
-
-                                tween(newBus)
-                                    .to(0.15, { position: new Vec3(4.185, 4.635, -3.96) }, { easing: 'quadInOut' })
-                                    .call(() => {
-                                        this.Bidx = 0;
-                                        this.CheckCollector(() => {
-                                            this.isAnimating = false;
-                                            this.collectoranim = false;
-                                            onComplete?.();
-                                        });
-
-                                        Fbus.setPosition(-0.253, 4.635, -8.398);
-                                        Fbus.children?.forEach(child => child.destroy());
-                                    })
-                                    .start();
-
-                                tween(this.BusArr[Lbus])
-                                    .to(0.15, { position: new Vec3(1.694, 4.635, -6.451) }, { easing: 'quadInOut' })
-                                    .start();
-                            })
-                            .start();
-                    } else {
-                        this.CheckCollector(() => {
-                            this.isAnimating = false;
-                            this.collectoranim = false;
-                            onComplete?.();
-                        });
-                    }
-                }, globalDelay + 0.5);
-            } else {
-                // No matches found: reset all tiles
-                for (let i = 0; i < this.collectorArr.length; i++) {
-                    const tile = this.collectorArr[i].getComponent(Box);
-                    tile.reset(i);
-                }
-                this.isAnimating = false;
-                this.collectoranim = false;
-                onComplete?.();
-            }
-        } else {
-            this.isAnimating = false;
-            this.collectoranim = false;
-            onComplete?.();
-        }
-    }
 
     private worldPositions;
     sound: boolean = true;
