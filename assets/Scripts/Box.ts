@@ -1,5 +1,5 @@
 
-import { _decorator, BlockInputEvents, Component, director, Node, Quat, tween, Vec3 } from 'cc';
+import { _decorator, BlockInputEvents, Component, director, Node, Quat, tween, v3, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 /**
@@ -47,12 +47,12 @@ export class Box extends Component {
     idx;
     public isBus: boolean = false;
     Bus
-    fromcollector: boolean = false;
+    public fromcollector: boolean = false;
     public pos;
     public t;
 
     protected start(): void {
-        tween(this.node).delay(this.t).to(0.1, { position: this.pos }).start();
+        tween(this.node).delay(this.t).to(0.15, { scale: v3(0.62,0.907,0.7) }).start();
     }
 
     reset(idx) {
@@ -88,9 +88,18 @@ export class Box extends Component {
     // -----------------------------
     const midPos = new Vec3(
         (startPos.x + endPos.x) * 0.5,
-        (startPos.y + endPos.y) * 0.5+ 2.0 ,   // jump height  
+        (startPos.y + endPos.y) * 0.7+ 3,   // jump height  
         (startPos.z + endPos.z) * 0.5
     );
+
+    let height = 8;
+    let x = endPos.x
+    let z = endPos.z
+    if(this.fromcollector){
+        // height = 7
+        x = +0.05
+        
+    }
 
     // Rotation at midpoint (optional)
     const midRot = new Quat();
@@ -102,12 +111,17 @@ export class Box extends Component {
     tween(this.node)
         // Jump up
         .to(0.15, {
-            worldPosition: midPos,
+            worldPosition: v3(startPos.x, height, startPos.z),
             worldRotation: midRot,
         })
 
         // Fall down to target
         .to(0.15, {
+            worldPosition: v3(x, height, z),
+            worldRotation: endRot,
+        })
+
+        .to(0.05, {
             worldPosition: endPos,
             worldRotation: endRot,
         }, { easing: "quadIn" })

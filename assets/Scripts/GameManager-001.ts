@@ -116,7 +116,7 @@ export class GameManager extends Component {
                 .repeatForever()
                 .start();
             this.sethandpos();
-        }, 1.2)
+        }, 1.4)
     }
 
     sethandpos() {
@@ -293,6 +293,7 @@ export class GameManager extends Component {
         let ar = []
         for (let i = node.children.length - 1; i > 0; i--) {
 
+
             if (Number(node.children[i].name) === Math.floor(bus / 10) && this.fsthalfidx < 5) {
 
                 node.children[i].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
@@ -304,14 +305,15 @@ export class GameManager extends Component {
                 this.Bix += 1
             } else {
 
-                if (this.Collectoridx > 30) {
-                    this.CTAcall()
-                    return;
-                }
+                
                 node.children[i].getComponent(Box).parent = this.Collector.children[this.Collectoridx]
                 this.Collectoridx += 1
             }
             ar.push(node.children[i])
+                        if (this.Collectoridx > 30) {
+                    this.CTAcall()
+                    return;
+                }
             if (node.children[i].name != node.children[i - 1].name) {
                 break;
             }
@@ -352,7 +354,7 @@ export class GameManager extends Component {
                             tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
                             tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
                             tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
-                                tween(this.Levels[1]).delay(0.6).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
+                                tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
 
                                 this.idleTime = 4
                                 this.setbusColor();
@@ -429,18 +431,20 @@ export class GameManager extends Component {
         for (let i = 0; i < len; i++) {
             let node = this.Collector.children[i]
             if (!this.Collector.children[0].children[0]) return
-            if (Number(node.children[0]?.name) === Math.floor(bus / 10) && this.fsthalfidx < 5) {
+            if (Number(node?.children[0]?.name) === Math.floor(bus / 10) && this.fsthalfidx < 5) {
 
                 node.children[0].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
                 this.fsthalfidx += 1;
                 this.Bix += 1
                 this.Collectoridx -= 1
+                node.children[0].getComponent(Box).fromcollector = true;
                 ar.push(node.children[0])
-            } else if (Number(node.children[0]?.name) === (bus % 10) && this.Snthalfidx < 5) {
+            } else if (Number(node?.children[0]?.name) === (bus % 10) && this.Snthalfidx < 5) {
                 node.children[0].getComponent(Box).parent = curntbus.children[5 + this.Snthalfidx]
                 this.Snthalfidx += 1;
                 this.Bix += 1
                 this.Collectoridx -= 1
+                node.children[0].getComponent(Box).fromcollector = true;
                 ar.push(node.children[0])
             }
 
@@ -481,7 +485,7 @@ export class GameManager extends Component {
                             tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
                             tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
                                 this.setbusColor();
-                                tween(this.Levels[1]).delay(0.6).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
+                                tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
 
                                 this.idleTime = 4
                                 tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).call(() => {
@@ -506,7 +510,7 @@ export class GameManager extends Component {
 
                 }, 1)
             }
-        }, 0.06, ar.length - 1)
+        }, 0.07, ar.length - 1)
 
 
 
@@ -650,10 +654,12 @@ export class GameManager extends Component {
         this.audioSource.stop();
         if (sys.os === sys.OS.ANDROID) {
             window.open("https://play.google.com/store/apps/details?id=com.Machina.SortDash", "SortDash");
+            // this.super_html_playable.set_google_play_url("https://play.google.com/store/apps/details?id=com.Machina.SortDash");
         } else if (sys.os === sys.OS.IOS) {
             window.open("https://apps.apple.com/us/app/sort-dash-color-match/id6737854991", "SortDash");
         } else {
             window.open("https://play.google.com/store/apps/details?id=com.Machina.SortDash", "SortDash");
+            // this.super_html_playable.set_google_play_url("https://play.google.com/store/apps/details?id=com.Machina.SortDash");
         }
         this.super_html_playable.download();
 

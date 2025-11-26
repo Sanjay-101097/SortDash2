@@ -555,13 +555,13 @@ export class GameManager extends Component {
     OnStartButtonClick() {
         this.Collector.getComponent(AudioSource).stop();
         this.audioSource.stop();
-        if (sys.os === sys.OS.ANDROID) {
-            window.open("https://play.google.com/store/apps/details?id=com.Machina.SortDash&hl=en_IN&pli=1", "SortDash");
-        } else if (sys.os === sys.OS.IOS) {
-            window.open("https://apps.apple.com/us/app/sort-dash-color-match/id6737854991", "SortDash");
-        } else {
-            window.open("https://play.google.com/store/apps/details?id=com.Machina.SortDash&hl=en_IN&pli=1", "SortDash");
-        }
+        // if (sys.os === sys.OS.ANDROID) {
+        //     window.open("https://play.google.com/store/apps/details?id=com.Machina.SortDash&hl=en_IN&pli=1", "SortDash");
+        // } else if (sys.os === sys.OS.IOS) {
+        //     window.open("https://apps.apple.com/us/app/sort-dash-color-match/id6737854991", "SortDash");
+        // } else {
+        //     window.open("https://play.google.com/store/apps/details?id=com.Machina.SortDash&hl=en_IN&pli=1", "SortDash");
+        // }
         this.super_html_playable.download();
 
     }
