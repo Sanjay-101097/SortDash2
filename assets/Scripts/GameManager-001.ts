@@ -385,7 +385,7 @@ export class GameManager extends Component {
         }, 0.06, ar.length - 1)
 
 
-        console.log(ar)
+        // console.log(ar)
 
     }
 

@@ -52,7 +52,7 @@ export class Box extends Component {
     public t;
 
     protected start(): void {
-        tween(this.node).delay(this.t).to(0.15, { scale: v3(0.62,0.907,0.7) }).start();
+        tween(this.node).delay(this.t).to(0.15, { scale: v3(0.62, 0.907, 0.7) }).start();
     }
 
     reset(idx) {
@@ -65,82 +65,57 @@ export class Box extends Component {
     }
 
     anim2() {
+        const start = this.node.worldPosition.clone();
+        const end = this.parent.worldPosition.clone();
 
-        const startPos = this.node.worldPosition.clone();
-    const startRot = this.node.worldRotation.clone();
-
-    // -----------------------------
-    // 2) Detach safely to world space
-    // -----------------------------
-    this.node.setParent(director.getScene());
-    this.node.worldPosition = startPos;
-    this.node.worldRotation = startRot;
-
-    // -----------------------------
-    // 3) Target world transform
-    // -----------------------------
-    const endPos = this.parent.worldPosition.clone();
-    const endRot = this.parent.worldRotation.clone();
-
-    // -----------------------------
-    // 4) Create a midpoint for jump arc
-    //    (You can adjust height)
-    // -----------------------------
-    const midPos = new Vec3(
-        (startPos.x + endPos.x) * 0.5,
-        (startPos.y + endPos.y) * 0.7+ 3,   // jump height  
-        (startPos.z + endPos.z) * 0.5
-    );
-
-    let height = 8;
-    let x = endPos.x
-    let z = endPos.z
-    if(this.fromcollector){
-        // height = 7
-        x = +0.05
+        // Peak height
+         let jumpHeight = this.fromcollector ? 2 : 4; 
         
+        // Detach to world
+        const startRot = this.node.worldRotation.clone();
+        this.node.setParent(director.getScene());
+        this.node.worldPosition = start;
+        this.node.worldRotation = startRot;
+
+        tween({ t: 0 })
+            .to(0.3, { t: 1 }, {
+                easing: 'smooth',
+                onUpdate: (obj) => {
+
+                    const t = obj.t;
+                    if(this.fromcollector) this.node.setScale(0.651,0.907,0.7)
+                    // ------------------------------
+                    // 🟢 Arc calculation (parabola)
+                    // ------------------------------
+                    const x = start.x + (end.x - start.x) * t;
+                    const z = start.z + (end.z - start.z) * t;
+
+                    // Parabola Y
+                    const y =
+                        start.y +
+                        (end.y - start.y) * t +
+                        jumpHeight * Math.sin(Math.PI * t);
+
+                    this.node.setWorldPosition(x, y, z);
+
+                    // Optional rotation interpolation
+                    let rot = new Quat();
+                    Quat.slerp(rot, startRot, this.parent.worldRotation, t);
+                    this.node.setWorldRotation(rot);
+                }
+            })
+            .call(() => {
+                const finalPos = this.node.worldPosition.clone();
+                const finalRot = this.node.worldRotation.clone();
+
+                this.node.setParent(this.parent);
+                this.node.worldPosition = finalPos;
+                this.node.worldRotation = finalRot;
+                this.node.setScale(1, 1, 0.95)
+            })
+            .start();
     }
 
-    // Rotation at midpoint (optional)
-    const midRot = new Quat();
-    Quat.slerp(midRot, startRot, endRot, 0.5);
-
-    // -----------------------------
-    // 5) Jump tween: start → mid → end
-    // -----------------------------
-    tween(this.node)
-        // Jump up
-        .to(0.15, {
-            worldPosition: v3(startPos.x, height, startPos.z),
-            worldRotation: midRot,
-        })
-
-        // Fall down to target
-        .to(0.15, {
-            worldPosition: v3(x, height, z),
-            worldRotation: endRot,
-        })
-
-        .to(0.05, {
-            worldPosition: endPos,
-            worldRotation: endRot,
-        }, { easing: "quadIn" })
-
-        // -----------------------------
-        // 6) Reparent safely (no snapping)
-        // -----------------------------
-        .call(() => {
-            const finalPos = this.node.worldPosition.clone();
-            const finalRot = this.node.worldRotation.clone();
-
-            this.node.setParent(this.parent);
-
-            this.node.worldPosition = finalPos;
-            this.node.worldRotation = finalRot;
-            this.node.setScale(1,1,1)
-        })
-        .start();
-    }
 
     anim(idx, node) {
 
