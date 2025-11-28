@@ -665,7 +665,7 @@ export class GameManager extends Component {
 
     }
 
-    idleTime = 1.5;
+    idleTime = 2;
     dt = 0;
     dt1 = 0;
     enableidle = false;
