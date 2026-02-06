@@ -2,76 +2,15 @@
   "ver": "2.3.13",
   "importer": "fbx",
   "imported": true,
-  "uuid": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e",
+  "uuid": "19763ec4-f9fc-4283-90ea-aa350bb5a3b8",
   "files": [],
   "subMetas": {
-    "c33ae": {
-      "importer": "gltf-mesh",
-      "uuid": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@c33ae",
+    "72906": {
+      "importer": "gltf-scene",
+      "uuid": "19763ec4-f9fc-4283-90ea-aa350bb5a3b8@72906",
       "displayName": "",
-      "id": "c33ae",
-      "name": "standart.mesh",
-      "userData": {
-        "gltfIndex": 0,
-        "triangleCount": 776
-      },
-      "ver": "1.1.1",
-      "imported": true,
-      "files": [
-        ".bin",
-        ".json"
-      ],
-      "subMetas": {}
-    },
-    "48b02": {
-      "importer": "gltf-embeded-image",
-      "uuid": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@48b02",
-      "displayName": "",
-      "id": "48b02",
-      "name": "base_color_texture.image",
-      "userData": {
-        "gltfIndex": 0,
-        "fixAlphaTransparencyArtifacts": true,
-        "hasAlpha": true,
-        "type": "texture"
-      },
-      "ver": "1.0.3",
-      "imported": true,
-      "files": [
-        ".json",
-        ".png"
-      ],
-      "subMetas": {}
-    },
-    "7d6ab": {
-      "importer": "texture",
-      "uuid": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@7d6ab",
-      "displayName": "",
-      "id": "7d6ab",
-      "name": "base_color_texture.texture",
-      "userData": {
-        "wrapModeS": "repeat",
-        "wrapModeT": "repeat",
-        "minfilter": "linear",
-        "magfilter": "linear",
-        "mipfilter": "none",
-        "anisotropy": 0,
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@48b02"
-      },
-      "ver": "1.0.22",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {}
-    },
-    "a146c": {
-      "importer": "gltf-material",
-      "uuid": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@a146c",
-      "displayName": "",
-      "id": "a146c",
-      "name": "cards.material",
+      "id": "72906",
+      "name": "CarSlot Base (1) (1).prefab",
       "userData": {
         "gltfIndex": 0
       },
@@ -82,12 +21,30 @@
       ],
       "subMetas": {}
     },
-    "90c7e": {
-      "importer": "gltf-scene",
-      "uuid": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@90c7e",
+    "2f6d1": {
+      "importer": "gltf-mesh",
+      "uuid": "19763ec4-f9fc-4283-90ea-aa350bb5a3b8@2f6d1",
       "displayName": "",
-      "id": "90c7e",
-      "name": "Card.prefab",
+      "id": "2f6d1",
+      "name": "Cube.mesh",
+      "userData": {
+        "gltfIndex": 0,
+        "triangleCount": 2244
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b4e6b": {
+      "importer": "gltf-material",
+      "uuid": "19763ec4-f9fc-4283-90ea-aa350bb5a3b8@b4e6b",
+      "displayName": "",
+      "id": "b4e6b",
+      "name": "Material.material",
       "userData": {
         "gltfIndex": 0
       },
@@ -100,31 +57,9 @@
     }
   },
   "userData": {
-    "imageMetas": [
-      {
-        "name": "base_color_texture",
-        "uri": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@48b02"
-      }
-    ],
-    "legacyFbxImporter": false,
-    "assetFinder": {
-      "meshes": [
-        "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@c33ae"
-      ],
-      "skeletons": [],
-      "textures": [
-        "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@7d6ab"
-      ],
-      "materials": [
-        "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@a146c"
-      ],
-      "scenes": [
-        "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@90c7e"
-      ]
-    },
+    "imageMetas": [],
     "fbx": {
-      "smartMaterialEnabled": false,
-      "matchMeshNames": false
+      "smartMaterialEnabled": true
     },
     "lods": {
       "enable": false,
@@ -144,20 +79,38 @@
         }
       ]
     },
+    "assetFinder": {
+      "meshes": [
+        "19763ec4-f9fc-4283-90ea-aa350bb5a3b8@2f6d1"
+      ],
+      "skeletons": [],
+      "textures": [],
+      "materials": [
+        "19763ec4-f9fc-4283-90ea-aa350bb5a3b8@b4e6b"
+      ],
+      "scenes": [
+        "19763ec4-f9fc-4283-90ea-aa350bb5a3b8@72906"
+      ]
+    },
     "materials": {
-      "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@a146c": {
+      "19763ec4-f9fc-4283-90ea-aa350bb5a3b8@b4e6b": {
         "__type__": "cc.Material",
         "_name": "",
         "_objFlags": 0,
         "__editorExtras__": {},
         "_native": "",
         "_effectAsset": {
-          "__uuid__": "c8f66d17-351a-48da-a12c-0212d28575c4",
+          "__uuid__": "9b20a514-6cc3-49de-b216-b6b863046249",
           "__expectedType__": "cc.EffectAsset"
         },
         "_techIdx": 0,
         "_defines": [
-          {},
+          {
+            "USE_INSTANCING": true
+          },
+          {
+            "USE_INSTANCING": true
+          },
           {},
           {},
           {},
@@ -218,23 +171,42 @@
                 {}
               ]
             }
+          },
+          {
+            "rasterizerState": {},
+            "depthStencilState": {},
+            "blendState": {
+              "targets": [
+                {}
+              ]
+            }
           }
         ],
         "_props": [
           {
+            "lineWidth": 64.9
+          },
+          {
             "mainColor": {
               "__type__": "cc.Color",
-              "r": 0,
-              "g": 223,
-              "b": 94,
+              "r": 255,
+              "g": 255,
+              "b": 255,
               "a": 255
             },
-            "roughness": 1,
-            "metallic": 0.416,
-            "specularIntensity": 0.699,
-            "mainTexture": {
-              "__uuid__": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@7d6ab",
-              "__expectedType__": "cc.Texture2D"
+            "shadeColor1": {
+              "__type__": "cc.Color",
+              "r": 184,
+              "g": 184,
+              "b": 184,
+              "a": 255
+            },
+            "shadeColor2": {
+              "__type__": "cc.Color",
+              "r": 126,
+              "g": 126,
+              "b": 126,
+              "a": 255
             }
           },
           {},

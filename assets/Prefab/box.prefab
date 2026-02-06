@@ -25,7 +25,7 @@
         "__id__": 7
       }
     ],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 12
@@ -50,7 +50,7 @@
     "_lscale": {
       "__type__": "cc.Vec3",
       "x": 0.651,
-      "y": 0.907,
+      "y": 0.508,
       "z": 0.7
     },
     "_mobility": 0,
