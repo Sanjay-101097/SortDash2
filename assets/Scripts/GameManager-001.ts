@@ -89,7 +89,7 @@ export class GameManager extends Component {
     crtCnt = 0
     isAnimating: boolean = false;
 
-    crntLevel = 1;
+    crntLevel = 2;
     Collectoridx = 0;
 
     public Downnload(): void {
@@ -248,7 +248,7 @@ export class GameManager extends Component {
 
             const result = PhysicsSystem.instance.raycastClosestResult;
             const collider = result.collider;
-            const node = collider.node;
+            const node = collider.node.parent;
 
 
             if (node.children.length > 1) {
