@@ -1,5 +1,5 @@
 
-import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, easing, EventTouch, geometry, Input, input, Material, MeshRenderer, Node, ParticleSystem, PhysicsSystem, RigidBody, Sprite, SpriteFrame, sys, Tween, tween, TweenAction, TweenSystem, UIOpacity, v3, Vec2, Vec3, view } from 'cc';
+import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, easing, EventTouch, geometry, Input, input, Label, Material, math, MeshRenderer, Node, ParticleSystem, PhysicsSystem, RigidBody, Sprite, SpriteFrame, sys, Tween, tween, TweenAction, TweenSystem, UIOpacity, v3, Vec2, Vec3, view } from 'cc';
 import { TileCreation } from './TileCreation';
 import { Box } from './Box';
 import { super_html_playable } from './super_html_playable';
@@ -45,6 +45,14 @@ export class GameManager extends Component {
     @property(Node)
     Canvas2: Node = null;
 
+    @property(Node)
+    arrow: Node = null;
+
+    @property(Label)
+    boxcnt: Label = null;
+
+    @property(Label)
+    timer: Label = null;
 
     @property(Node)
     BusArr: Node[] = []
@@ -80,10 +88,12 @@ export class GameManager extends Component {
 
     collectorArr: Node[] = [];
     busArr: Node[] = [];
-    buscolor: string[] = ["55", "15", "11", "00", "52", "33", "77", "60", "33", "33", "22", "77", "65"];
+    buscolor: string[] = ["11", "22", "11", "33", "00", "33", "22", "11", "33", "22", "00", "11", "00", "22", "11", "00", "22"];
     currentBusidx = 0;
     colliderinfo: Vec2[] = [new Vec2(2.7, 5.6), new Vec2(2, 4.2), , new Vec2(1.3, 2.7)]
     colliderpos: number[] = [4.7, 3.4, 2, 0.6]
+    busResetpos: Vec3 = v3(1.167, 5.016, -12.417)
+    busResetpos2: Vec3 = v3(3.804, 4.827, -9.288)
 
     wrongCnt = 0;
     crtCnt = 0
@@ -116,7 +126,7 @@ export class GameManager extends Component {
                 .repeatForever()
                 .start();
             this.sethandpos();
-        }, 1.4)
+        }, 0.3)
     }
 
     sethandpos() {
@@ -173,10 +183,7 @@ export class GameManager extends Component {
 
         for (let i = 0; i < level.children.length; i++) {
             node = level.children[i].children[level.children[i].children.length - 1];
-            if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 5) {
-                pos = node.worldPosition.clone();
-                return pos;
-            } else if (Number(node.name) === (curbus % 10) && this.Snthalfidx < 5) {
+            if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 6) {
                 pos = node.worldPosition.clone();
                 return pos;
             }
@@ -186,10 +193,7 @@ export class GameManager extends Component {
 
             for (let j = 0; j < level.children[i].children.length - 1; j++) {
                 node = level.children[i].children[j];
-                if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 5) {
-                    pos = level.children[i].children[level.children[i].children.length - 1].worldPosition.clone();
-                    return pos;
-                } else if (Number(node.name) === (curbus % 10) && this.Snthalfidx < 5) {
+                if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 6) {
                     pos = level.children[i].children[level.children[i].children.length - 1].worldPosition.clone();
                     return pos;
                 }
@@ -282,7 +286,7 @@ export class GameManager extends Component {
     Snthalfidx = 0
 
 
-    Cardmovement(node) {
+    Cardmovement(node: Node) {
         if (this.isAnimating) return;
         this.isAnimating = true;
         let sIdx = 0;
@@ -294,26 +298,22 @@ export class GameManager extends Component {
         for (let i = node.children.length - 1; i > 0; i--) {
 
 
-            if (Number(node.children[i].name) === Math.floor(bus / 10) && this.fsthalfidx < 5) {
+            if (Number(node.children[i].name) === Math.floor(bus / 10) && this.fsthalfidx < 6) {
 
                 node.children[i].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
                 this.fsthalfidx += 1;
                 this.Bix += 1
-            } else if (Number(node.children[i].name) === (bus % 10) && this.Snthalfidx < 5) {
-                node.children[i].getComponent(Box).parent = curntbus.children[5 + this.Snthalfidx]
-                this.Snthalfidx += 1;
-                this.Bix += 1
             } else {
 
-                
+
                 node.children[i].getComponent(Box).parent = this.Collector.children[this.Collectoridx]
                 this.Collectoridx += 1
             }
             ar.push(node.children[i])
-                        if (this.Collectoridx > 30) {
-                    this.CTAcall()
-                    return;
-                }
+            if (this.Collectoridx > 24) {
+                this.CTAcall()
+                return;
+            }
             if (node.children[i].name != node.children[i - 1].name) {
                 break;
             }
@@ -322,13 +322,18 @@ export class GameManager extends Component {
         this.resetCollector()
         let idx = 0
 
-        this.scheduleOnce(() => { this.isAnimating = false; }, 0.06 * ar.length)
+
+        this.scheduleOnce(() => { this.isAnimating = false; 
+                    if (node.children.length <= 1) {
+            tween(node.getChildByName("deck")).delay(0.5).to(0.2, { scale: v3(0,0,0) }).start()
+        }
+        }, 0.06 * ar.length)
 
         this.schedule(() => {
             ar[idx].getComponent(Box).anim2()
             idx += 1
             this.audioSource.playOneShot(this.Audioclips[2], 1);
-            if (this.Bix >= 10) {
+            if (this.Bix >= 6) {
                 this.scheduleOnce(() => {
                     this.audioSource.playOneShot(this.Audioclips[1], 1);
                     this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
@@ -336,34 +341,19 @@ export class GameManager extends Component {
                 }, 0.3)
                 this.Bix = 0
                 this.crtCnt += 1
+                this.boxcnt.string = (17-this.crtCnt).toString()
                 this.scheduleOnce(() => {
                     let bus = this.BusArr[this.currentBusidx]
                     let buspos = bus.position.clone()
 
 
                     tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
-                    tween(bus).delay(0.3).to(0.2, { position: v3(13.457, 4.8, 4.857) }).call(() => {
+                    this.arrowanim();
+                    tween(bus).delay(0.3).to(0.2, { position: v3(10.671, 4.827, -2.421) }).call(() => {
                         this.resetbusslots(bus)
-                        bus.setPosition(-0.359, 4.8, -8.959)
+                        bus.setPosition(this.busResetpos)
                         this.fsthalfidx = 0
                         this.Snthalfidx = 0
-                        if (this.crntLevel === 1 && this.crtCnt === 2) {
-                            this.crntLevel += 1
-                            this.currentBusidx = 0
-                            this.levelHeaderBG.active = true;
-                            tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
-                            tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
-                            tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
-                                tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
-
-                                this.idleTime = 4
-                                this.setbusColor();
-                                tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).call(() => {
-
-                                    this.checkCollector()
-                                }).start()
-                            }).start()
-                        }
                     }).start()
                     this.currentBusidx += 1;
                     if (this.currentBusidx > 2) {
@@ -373,6 +363,7 @@ export class GameManager extends Component {
                         this.setbusColor();
                     }
                     if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
+                        tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
                         tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
                             this.checkCollector()
 
@@ -387,6 +378,28 @@ export class GameManager extends Component {
 
         // console.log(ar)
 
+    }
+
+    arrowanim() {
+        let initpos = this.arrow.children[this.arrow.children.length - 1].position.clone()
+        for (let i = this.arrow.children.length - 1; i > 0; i--) {
+            let node = this.arrow.children[i];
+            let pos
+            if (i > 0) {
+                pos = this.arrow.children[i - 1].position;
+                tween(node).delay(0.3).to(0.2, { position: pos }).call(() => {
+                    if (node.getSiblingIndex() == 1) {
+                        this.arrow.children[0].setSiblingIndex(this.arrow.children.length - 1)
+                    }
+                }).start()
+            } else {
+                pos = initpos
+                node.setPosition(pos)
+                // 
+            }
+
+
+        }
     }
 
     CTAcall() {
@@ -414,12 +427,14 @@ export class GameManager extends Component {
 
     setbusColor() {
         let bus = this.BusArr[this.currentBusidx]
-        bus.name = this.buscolor[this.crtCnt - 2]
-        let color = Number(this.buscolor[this.crtCnt - 2])
-        let material1 = this.colorMaterials[Math.floor(color / 10)]
-        let material2 = this.colorMaterials[color % 10]
-        bus.getChildByName("bus").getComponent(MeshRenderer).setMaterial(material1, 1);
-        bus.getChildByName("bus").getComponent(MeshRenderer).setMaterial(material2, 0);
+        bus.name = this.buscolor[this.crtCnt]
+        let color = Number(this.buscolor[this.crtCnt])
+        let material = this.colorMaterials[color % 10]
+        bus.getComponent(MeshRenderer).setMaterial(material, 0);
+        let bus2 = this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]
+        let color2 = Number(this.buscolor[this.crtCnt + 1])
+        let material2 = this.colorMaterials[color2 % 10]
+        bus2.getComponent(MeshRenderer).setMaterial(material2, 0);
     }
 
     checkCollector() {
@@ -431,17 +446,10 @@ export class GameManager extends Component {
         for (let i = 0; i < len; i++) {
             let node = this.Collector.children[i]
             if (!this.Collector.children[0].children[0]) return
-            if (Number(node?.children[0]?.name) === Math.floor(bus / 10) && this.fsthalfidx < 5) {
+            if (Number(node?.children[0]?.name) === Math.floor(bus / 10) && this.fsthalfidx < 6) {
 
                 node.children[0].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
                 this.fsthalfidx += 1;
-                this.Bix += 1
-                this.Collectoridx -= 1
-                node.children[0].getComponent(Box).fromcollector = true;
-                ar.push(node.children[0])
-            } else if (Number(node?.children[0]?.name) === (bus % 10) && this.Snthalfidx < 5) {
-                node.children[0].getComponent(Box).parent = curntbus.children[5 + this.Snthalfidx]
-                this.Snthalfidx += 1;
                 this.Bix += 1
                 this.Collectoridx -= 1
                 node.children[0].getComponent(Box).fromcollector = true;
@@ -460,7 +468,7 @@ export class GameManager extends Component {
             this.audioSource.playOneShot(this.Audioclips[2], 1);
             ar[idx].getComponent(Box).anim2()
             idx += 1
-            if (this.Bix >= 10) {
+            if (this.Bix >= 6) {
                 this.scheduleOnce(() => {
                     this.audioSource.playOneShot(this.Audioclips[1], 1);
                     this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
@@ -472,27 +480,13 @@ export class GameManager extends Component {
                     let buspos = this.BusArr[this.currentBusidx].position.clone()
                     let bus = this.BusArr[this.currentBusidx]
                     tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
-                    tween(bus).delay(0.3).to(0.2, { position: v3(13.457, 4.8, 4.857) }).call(() => {
+                    this.arrowanim();
+                    tween(bus).delay(0.3).to(0.2, { position: v3(10.671, 4.827, -2.421) }).call(() => {
                         this.resetbusslots(bus)
-                        bus.setPosition(-0.359, 4.8, -8.959)
+                        bus.setPosition(this.busResetpos)
                         this.fsthalfidx = 0
                         this.Snthalfidx = 0
-                        if (this.crntLevel === 1 && this.crtCnt === 2) {
-                            this.crntLevel += 1
-                            this.currentBusidx = 0
-                            this.levelHeaderBG.active = true;
-                            tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
-                            tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
-                            tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
-                                this.setbusColor();
-                                tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
-
-                                this.idleTime = 4
-                                tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).call(() => {
-                                    this.checkCollector()
-                                }).start()
-                            }).start()
-                        }
+                        
                     }).start()
 
                     this.currentBusidx += 1;
@@ -502,11 +496,14 @@ export class GameManager extends Component {
                     if (this.crntLevel === 2) {
                         this.setbusColor();
                     }
-                    if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2)
+                    if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
+                        tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
                         tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
 
                             this.checkCollector()
                         }).start()
+                    }
+
 
                 }, 1)
             }
@@ -669,6 +666,14 @@ export class GameManager extends Component {
     dt = 0;
     dt1 = 0;
     enableidle = false;
+    time = 90
+
+    timerlable() {
+        const minutes = Math.floor(this.time / 60);
+        const seconds = this.time % 60;
+        this.timer.string =`${minutes < 10 ? '0' : ''}${minutes} : ${seconds < 10 ? '0' : ''}${seconds}`;
+
+    }
 
     update(deltaTime: number) {
         if (this.enableidle) {
@@ -682,7 +687,12 @@ export class GameManager extends Component {
         }
         if (this.firsttouch) {
             this.dt1 += deltaTime;
-            if (this.dt1 >= 50) {
+            if (this.dt1 >= 1) {
+                this.dt1 =0
+                this.time -= 1
+                this.timerlable()
+            }
+            if (this.time <= 0) {
                 this.CTA.active = true;
                 this.CTAcall()
                 this.firsttouch = false

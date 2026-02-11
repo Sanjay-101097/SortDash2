@@ -1,5 +1,5 @@
 
-import { _decorator, BlockInputEvents, Component, director, Node, Quat, tween, v3, Vec3 } from 'cc';
+import { _decorator, BlockInputEvents, Component, director, MeshRenderer, Node, Quat, tween, v3, Vec3, Vec4 } from 'cc';
 const { ccclass, property } = _decorator;
 
 /**
@@ -53,6 +53,7 @@ export class Box extends Component {
 
     protected start(): void {
         tween(this.node).delay(this.t).to(0.15, { scale: v3(0.62, 0.907, 0.7) }).start();
+        this.meshRenderer = this.node.children[2].getComponent(MeshRenderer)
     }
 
     reset(idx) {
@@ -69,8 +70,8 @@ export class Box extends Component {
         const end = this.parent.worldPosition.clone();
 
         // Peak height
-         let jumpHeight = this.fromcollector ? 2 : 4; 
-        
+        let jumpHeight = this.fromcollector ? 2 : 4;
+
         // Detach to world
         const startRot = this.node.worldRotation.clone();
         this.node.setParent(director.getScene());
@@ -83,7 +84,7 @@ export class Box extends Component {
                 onUpdate: (obj) => {
 
                     const t = obj.t;
-                    if(this.fromcollector) this.node.setScale(0.651,0.907,0.7)
+                    if (this.fromcollector) this.node.setScale(0.651, 0.907, 0.7)
                     // ------------------------------
                     // 🟢 Arc calculation (parabola)
                     // ------------------------------
@@ -195,87 +196,20 @@ export class Box extends Component {
     private rotationDuration: number = 1;
     private readonly referenceDuration: number = 1;
     enabl = true;
-    update(deltaTime: number) {
-        // if (!this.isanim) return;
 
-        // // this.timeElapsed += deltaTime;
-        // // let t = this.timeElapsed / this.duration;
-        // // if (t > 1) t = 1;
+    @property
+    speedY: number = 0.1;
 
-        // this.timeElapsed += deltaTime;
-        // let t = this.timeElapsed / this.duration;
-        // if (t > 1) t = 1;
+    private meshRenderer: MeshRenderer = null!;
+    private offset: Vec4 = new Vec4(0.4, 0.4, 0, 0);
+    time = 0;
+    update(dt: number) {
+        this.time +=dt
+        // if (this.time < 2) {
+            this.offset.w -= this.speedY * dt;
+            this.meshRenderer.material.setProperty('tilingOffset', this.offset);
+        // } 
 
-        // const basePos = new Vec3();
-        // Vec3.lerp(basePos, this.startPosition, this.endPosition, t);
-
-        // const waveProgress = this.timeElapsed * this.frequency;
-        // const sineOffset = Math.sin(Math.PI * t) * this.amplitude * this.dir;
-
-        // const offset = new Vec3();
-        // Vec3.multiplyScalar(offset, this.perpendicular, sineOffset);
-
-        // const finalPos = new Vec3();
-        // Vec3.add(finalPos, basePos, offset);
-        // this.node.setPosition(finalPos);
-
-        // // Stop only when fully done
-        // if (t >= 1) {
-        //     // this.node.setPosition(this.endPosition); // Optional: snap to final pos
-        //     this.isanim = false;
-        // }
-
-
-        // // Scale animation
-        // const scale = 1 + (0.7 - 1) * t;
-        // this.node.setScale(scale, scale, scale);
-
-        // // Rotation interpolation
-        // this.rotationElapsed += deltaTime;
-        // let rt = this.rotationElapsed / this.rotationDuration;
-        // if (rt > 1) rt = 1;
-
-        // const lerpAngle = (start: number, end: number, alpha: number) => start + (end - start) * alpha;
-        // const currentEuler = this.node.eulerAngles;
-        // this.node.eulerAngles = new Vec3(
-        //     lerpAngle(currentEuler.x, this.collectorRotation.x, rt),
-        //     lerpAngle(currentEuler.y, this.collectorRotation.y, rt),
-        //     lerpAngle(currentEuler.z, this.collectorRotation.z, rt)
-        // );
-
-        // // Reparenting logic
-        // if (this.timeElapsed >= this.duration) {
-        //     this.isanim = false;
-
-        //     if (this.isBus &&
-        //         this.node.position.x <= (this.busarray[9].x + this.idx * 0.14) + 0.01 &&
-        //         this.node.position.x >= (this.busarray[9].x + this.idx * 0.14) - 0.01) {
-
-        //         const worldPos = this.node.getWorldPosition();
-        //         const worldRot = this.node.getWorldRotation();
-
-        //         const localPos = new Vec3();
-        //         this.Bus.inverseTransformPoint(localPos, worldPos);
-
-        //         const worldRotQuat = new Quat();
-        //         this.node.getWorldRotation(worldRotQuat);
-
-        //         const parentWorldRot = new Quat();
-        //         this.Bus.getWorldRotation(parentWorldRot);
-
-        //         const parentWorldRotInv = new Quat();
-        //         Quat.invert(parentWorldRotInv, parentWorldRot);
-
-        //         const localRot = new Quat();
-        //         Quat.multiply(localRot, parentWorldRotInv, worldRotQuat);
-
-        //         this.node.removeFromParent();
-        //         this.Bus.addChild(this.node);
-
-        //         this.node.setPosition(localPos);
-        //         this.node.setRotationFromEuler(0, 0, 90);
-        //     }
-        // }
     }
 
 

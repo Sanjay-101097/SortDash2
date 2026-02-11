@@ -35,10 +35,10 @@
             "_value": true
           },
           "gfx-webgl": {
-            "_value": true
+            "_value": false
           },
           "gfx-webgl2": {
-            "_value": false
+            "_value": true
           },
           "gfx-webgpu": {
             "_value": false
@@ -197,7 +197,7 @@
             "_value": true
           },
           "procedural-animation": {
-            "_value": false
+            "_value": true
           },
           "custom-pipeline-post-process": {
             "_value": false
@@ -223,12 +223,13 @@
           "audio",
           "base",
           "custom-pipeline",
-          "gfx-webgl",
+          "gfx-webgl2",
           "light-probe",
           "marionette",
           "particle",
           "physics-ammo",
           "primitive",
+          "procedural-animation",
           "tween",
           "ui",
           "webview"
