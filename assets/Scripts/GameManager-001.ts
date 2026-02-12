@@ -377,7 +377,7 @@ export class GameManager extends Component {
                             tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
                         }
                         if (this.crtCnt < 17) {
-                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).delay(0.3).call(() => {
                                 this.checkCollector()
 
                             }).start()
@@ -521,7 +521,7 @@ export class GameManager extends Component {
                             tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
                         }
                        if (this.crtCnt < 17) {
-                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).delay(0.3).call(() => {
                                 this.checkCollector()
 
                             }).start()
