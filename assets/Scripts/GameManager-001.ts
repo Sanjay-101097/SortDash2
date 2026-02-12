@@ -114,7 +114,7 @@ export class GameManager extends Component {
 
 
         this.scheduleOnce(() => {
-            let nodeToAnimate = this.CTA.parent.getChildByName("lable");
+            let nodeToAnimate = this.CTA.parent.getChildByName("image");
             nodeToAnimate.active = true;
             const zoomIn = tween(nodeToAnimate)
                 .to(0.5, { scale: v3(0.9, 0.9, 0.9) });
@@ -247,7 +247,7 @@ export class GameManager extends Component {
         Tween.stopAllByTarget(this.Hand);
         this.dt = 0
         this.Hand.active = false;
-        this.CTA.parent.getChildByName("lable").active = false;
+        this.CTA.parent.getChildByName("image").active = false;
         if (PhysicsSystem.instance.raycastClosest(ray, mask, maxDistance, queryTrigger)) {
 
             const result = PhysicsSystem.instance.raycastClosestResult;
@@ -288,6 +288,7 @@ export class GameManager extends Component {
 
     Cardmovement(node: Node) {
         if (this.isAnimating) return;
+        let parent = node
         this.isAnimating = true;
         let sIdx = 0;
         let curntbus = this.BusArr[this.currentBusidx]
@@ -323,10 +324,13 @@ export class GameManager extends Component {
         let idx = 0
 
 
-        this.scheduleOnce(() => { this.isAnimating = false; 
-                    if (node.children.length <= 1) {
-            tween(node.getChildByName("deck")).delay(0.5).to(0.2, { scale: v3(0,0,0) }).start()
-        }
+        this.scheduleOnce(() => {
+            this.isAnimating = false;
+            this.scheduleOnce(() => {
+                if (parent.children.length <= 1) {
+                    tween(parent.getChildByName("deck")).delay(0.5).to(0.2, { scale: v3(0, 0, 0) }).start()
+                }
+            }, 0.15)
         }, 0.06 * ar.length)
 
         this.schedule(() => {
@@ -341,12 +345,14 @@ export class GameManager extends Component {
                 }, 0.3)
                 this.Bix = 0
                 this.crtCnt += 1
-                this.boxcnt.string = (17-this.crtCnt).toString()
+                this.boxcnt.string = (17 - this.crtCnt).toString()
                 this.scheduleOnce(() => {
                     let bus = this.BusArr[this.currentBusidx]
                     let buspos = bus.position.clone()
 
-
+                    if (this.crtCnt >= 17) {
+                        this.CTAcall()
+                    }
                     tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
                     this.arrowanim();
                     tween(bus).delay(0.3).to(0.2, { position: v3(10.671, 4.827, -2.421) }).call(() => {
@@ -354,20 +360,28 @@ export class GameManager extends Component {
                         bus.setPosition(this.busResetpos)
                         this.fsthalfidx = 0
                         this.Snthalfidx = 0
+
                     }).start()
                     this.currentBusidx += 1;
                     if (this.currentBusidx > 2) {
                         this.currentBusidx = 0
                     }
                     if (this.crntLevel === 2) {
-                        this.setbusColor();
+                        if (this.crtCnt < 17) {
+                            this.setbusColor();
+                        }
+
                     }
                     if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
-                        tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
-                        tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
-                            this.checkCollector()
+                        if (this.crtCnt < 16) {
+                            tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
+                        }
+                        if (this.crtCnt < 17) {
+                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+                                this.checkCollector()
 
-                        }).start()
+                            }).start()
+                        }
                     }
 
 
@@ -481,12 +495,15 @@ export class GameManager extends Component {
                     let bus = this.BusArr[this.currentBusidx]
                     tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
                     this.arrowanim();
+                    if (this.crtCnt >= 17) {
+                        this.CTAcall()
+                    }
                     tween(bus).delay(0.3).to(0.2, { position: v3(10.671, 4.827, -2.421) }).call(() => {
                         this.resetbusslots(bus)
                         bus.setPosition(this.busResetpos)
                         this.fsthalfidx = 0
                         this.Snthalfidx = 0
-                        
+
                     }).start()
 
                     this.currentBusidx += 1;
@@ -494,14 +511,21 @@ export class GameManager extends Component {
                         this.currentBusidx = 0
                     }
                     if (this.crntLevel === 2) {
-                        this.setbusColor();
+                        if (this.crtCnt < 17) {
+                            this.setbusColor();
+                        }
+
                     }
                     if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
-                        tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
-                        tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+                        if (this.crtCnt < 16) {
+                            tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
+                        }
+                       if (this.crtCnt < 17) {
+                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
+                                this.checkCollector()
 
-                            this.checkCollector()
-                        }).start()
+                            }).start()
+                        }
                     }
 
 
@@ -671,7 +695,7 @@ export class GameManager extends Component {
     timerlable() {
         const minutes = Math.floor(this.time / 60);
         const seconds = this.time % 60;
-        this.timer.string =`${minutes < 10 ? '0' : ''}${minutes} : ${seconds < 10 ? '0' : ''}${seconds}`;
+        this.timer.string = `${minutes < 10 ? '0' : ''}${minutes} : ${seconds < 10 ? '0' : ''}${seconds}`;
 
     }
 
@@ -688,7 +712,7 @@ export class GameManager extends Component {
         if (this.firsttouch) {
             this.dt1 += deltaTime;
             if (this.dt1 >= 1) {
-                this.dt1 =0
+                this.dt1 = 0
                 this.time -= 1
                 this.timerlable()
             }
