@@ -25,6 +25,8 @@ export class Box extends Component {
     endPosition: Vec3;
     public parent: Node;
 
+    isused = false
+
 
     public duration: number = 0.3;
 

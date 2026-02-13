@@ -253,10 +253,18 @@ export class GameManager extends Component {
             const result = PhysicsSystem.instance.raycastClosestResult;
             const collider = result.collider;
             const node = collider.node.parent;
+            for (let i = node.children.length - 1; i > 0; i--) {
+
+
+                if (node.children[i].name != node.children[i - 1].name) {
+                    break;
+                }
+                node.children[i].getComponent(BoxCollider).enabled = false
+            }
 
 
             if (node.children.length > 1) {
-                this.audioSource.playOneShot(this.Audioclips[0], 1);
+                this.audioSource.playOneShot(this.Audioclips[0], 0.6);
                 this.Cardmovement(node)
                 this.scheduleOnce(() => {
                     this.enableidle = true;
@@ -270,9 +278,9 @@ export class GameManager extends Component {
 
         } else {
             // No object was hit
-            this.isAnimating = false;
-            this.SelectedNode = this.Bolock;
-            this.InitialAngle = this.Bolock.eulerAngles.y;
+            // this.isAnimating = false;
+            // this.SelectedNode = this.Bolock;
+            // this.InitialAngle = this.Bolock.eulerAngles.y;
 
 
         }
@@ -298,26 +306,32 @@ export class GameManager extends Component {
         let ar = []
         for (let i = node.children.length - 1; i > 0; i--) {
 
+            
+                if (Number(node.children[i].name) === Math.floor(bus / 10) && this.fsthalfidx < 6) {
 
-            if (Number(node.children[i].name) === Math.floor(bus / 10) && this.fsthalfidx < 6) {
+                    node.children[i].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
+                    node.children[i].getComponent(Box).isused = true
+                    this.fsthalfidx += 1;
+                    this.Bix += 1
+                } else if(!node.children[i].getComponent(Box).isused) {
 
-                node.children[i].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
-                this.fsthalfidx += 1;
-                this.Bix += 1
-            } else {
 
+                    node.children[i].getComponent(Box).parent = this.Collector.children[this.Collectoridx]
+                    node.children[i].getComponent(Box).isused = true
+                    this.Collectoridx += 1
+                }
+                ar.push(node.children[i])
 
-                node.children[i].getComponent(Box).parent = this.Collector.children[this.Collectoridx]
-                this.Collectoridx += 1
-            }
-            ar.push(node.children[i])
-            if (this.Collectoridx > 24) {
-                this.CTAcall()
-                return;
-            }
-            if (node.children[i].name != node.children[i - 1].name) {
-                break;
-            }
+                if (this.Collectoridx > 24) {
+                    this.CTAcall()
+                    return;
+                }
+                if (node.children[i].name != node.children[i - 1].name) {
+                    break;
+                }
+                node.children[i].getComponent(BoxCollider).enabled = false
+            
+
             // node.children[i].getComponent(Box).anim2()
         }
         this.resetCollector()
@@ -331,15 +345,15 @@ export class GameManager extends Component {
                     tween(parent.getChildByName("deck")).delay(0.5).to(0.2, { scale: v3(0, 0, 0) }).start()
                 }
             }, 0.15)
-        }, 0.06 * ar.length)
+        }, 0.08 * ar.length)
 
         this.schedule(() => {
             ar[idx].getComponent(Box).anim2()
             idx += 1
-            this.audioSource.playOneShot(this.Audioclips[2], 1);
+            this.audioSource.playOneShot(this.Audioclips[2], 0.6);
             if (this.Bix >= 6) {
                 this.scheduleOnce(() => {
-                    this.audioSource.playOneShot(this.Audioclips[1], 1);
+                    this.audioSource.playOneShot(this.Audioclips[1], 0.4);
                     this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
                     this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play()
                 }, 0.3)
@@ -377,8 +391,14 @@ export class GameManager extends Component {
                             tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
                         }
                         if (this.crtCnt < 17) {
-                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).delay(0.3).call(() => {
+                            if(this.crtCnt==16){
+                                    this.scheduleOnce(()=>{
+                                        this.checkCollector()
+                                    },2)
+                                }
+                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).delay(0.1).call(() => {
                                 this.checkCollector()
+                                
 
                             }).start()
                         }
@@ -454,14 +474,19 @@ export class GameManager extends Component {
     checkCollector() {
         let curntbus = this.BusArr[this.currentBusidx]
         let ar = []
-        // if(curntbus){
         let bus = Number(curntbus.name)
         let len = this.Collectoridx
+
+        // 1. EARLY EXIT: Check if collector is entirely empty BEFORE the loop
+        if (!this.Collector.children[0] || !this.Collector.children[0].children[0]) return;
+
         for (let i = 0; i < len; i++) {
             let node = this.Collector.children[i]
-            if (!this.Collector.children[0].children[0]) return
-            if (Number(node?.children[0]?.name) === Math.floor(bus / 10) && this.fsthalfidx < 6) {
 
+            // 2. SKIP EMPTY SLOTS: If this specific slot is empty, just move to the next one
+            if (!node || !node.children[0]) continue;
+
+            if (Number(node.children[0].name) === Math.floor(bus / 10) && this.fsthalfidx < 6) {
                 node.children[0].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
                 this.fsthalfidx += 1;
                 this.Bix += 1
@@ -469,22 +494,26 @@ export class GameManager extends Component {
                 node.children[0].getComponent(Box).fromcollector = true;
                 ar.push(node.children[0])
             }
-
         }
 
         this.scheduleOnce(() => {
             if (ar.length > 0)
                 this.resetCollector()
-        }, 1)
+        }, 0.5)
+
         let idx = 0
 
         this.schedule(() => {
-            this.audioSource.playOneShot(this.Audioclips[2], 1);
+            // Make sure ar[idx] still exists before animating to prevent errors
+            if (!ar[idx]) return;
+
+            this.audioSource.playOneShot(this.Audioclips[2], 0.6);
             ar[idx].getComponent(Box).anim2()
             idx += 1
+
             if (this.Bix >= 6) {
                 this.scheduleOnce(() => {
-                    this.audioSource.playOneShot(this.Audioclips[1], 1);
+                    this.audioSource.playOneShot(this.Audioclips[1], 0.6);
                     this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
                     this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play()
                 }, 0.3)
@@ -495,46 +524,48 @@ export class GameManager extends Component {
                     let bus = this.BusArr[this.currentBusidx]
                     tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
                     this.arrowanim();
+
                     if (this.crtCnt >= 17) {
                         this.CTAcall()
                     }
+
                     tween(bus).delay(0.3).to(0.2, { position: v3(10.671, 4.827, -2.421) }).call(() => {
                         this.resetbusslots(bus)
                         bus.setPosition(this.busResetpos)
                         this.fsthalfidx = 0
                         this.Snthalfidx = 0
-
                     }).start()
 
                     this.currentBusidx += 1;
                     if (this.currentBusidx > 2) {
                         this.currentBusidx = 0
                     }
+
                     if (this.crntLevel === 2) {
                         if (this.crtCnt < 17) {
                             this.setbusColor();
                         }
-
                     }
+
                     if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
                         if (this.crtCnt < 16) {
                             tween(this.BusArr[this.currentBusidx + 1 > 2 ? 0 : this.currentBusidx + 1]).delay(0.3).to(0.2, { position: this.busResetpos2 }).start()
                         }
-                       if (this.crtCnt < 17) {
-                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).delay(0.3).call(() => {
+                        if (this.crtCnt < 17) {
+                            if(this.crtCnt==16){
+                                    this.scheduleOnce(()=>{
+                                        this.checkCollector()
+                                    },2)
+                                }
+                            tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).delay(0.1).call(() => {
                                 this.checkCollector()
-
+                                
                             }).start()
                         }
                     }
-
-
                 }, 1)
             }
-        }, 0.07, ar.length - 1)
-
-
-
+        }, 0.06, ar.length - 1)
     }
 
     resetCollector() {
