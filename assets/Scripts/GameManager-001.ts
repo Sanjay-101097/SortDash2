@@ -1,8 +1,9 @@
 
-import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, easing, EventTouch, geometry, Input, input, Material, MeshRenderer, Node, ParticleSystem, PhysicsSystem, RigidBody, Sprite, SpriteFrame, sys, Tween, tween, TweenAction, TweenSystem, UIOpacity, v3, Vec2, Vec3, view } from 'cc';
+import { _decorator, AudioClip, AudioSource, BlockInputEvents, BoxCollider, Camera, Component, easing, EventTouch, geometry, Input, input, Material, MeshRenderer, Node, ParticleSystem, PhysicsSystem, Quat, RigidBody, Sprite, SpriteFrame, sys, Tween, tween, TweenAction, TweenSystem, UIOpacity, v3, Vec2, Vec3, view } from 'cc';
 import { TileCreation } from './TileCreation';
 import { Box } from './Box';
 import { super_html_playable } from './super_html_playable';
+import { ALAnalytics } from './ALAnalytics';
 const { ccclass, property } = _decorator;
 
 /**
@@ -26,6 +27,9 @@ export class GameManager extends Component {
     // [2]
     @property(Node)
     Bolock: Node = null;
+
+    @property(Node)
+    intro: Node = null;
 
     @property(Node)
     Hand: Node = null;
@@ -67,6 +71,21 @@ export class GameManager extends Component {
     @property(SpriteFrame)
     HandSF: SpriteFrame[] = [];
 
+    @property([Node])
+    ConveyorSlots: Node =null; 
+
+    @property
+    conveyorSpeed: number = 3.0; // How many slots advance per second
+
+    @property
+    pickupDistance: number = 2.5; // Trigger distance for the cart
+
+    private pathPositions: Vec3[] = [];
+    private pathRotations: Quat[] = [];
+    private conveyorOffset: number = 0;
+    private dispatchingBus: boolean = false;
+    
+
 
     super_html_playable: super_html_playable = new super_html_playable();
     private _ray: geometry.Ray = new geometry.Ray();
@@ -98,10 +117,15 @@ export class GameManager extends Component {
 
     protected start(): void {
         this.audioSource = this.node.getComponent(AudioSource);
+        ALAnalytics.displayed();
 
-
+        tween(this.intro.getChildByName("text"))
+        .to(0.5, { scale: v3(1.2, 1.2, 1),eulerAngles:v3(0,0,-15) })
+        .to(0.5, { scale: v3(1, 1, 1) }).union().repeatForever().start();
         // this.Canvas.active = true;
-
+        tween(this.node).delay(2).call(()=>{
+            this.intro.active = false
+        }).start()
 
         this.scheduleOnce(() => {
             let nodeToAnimate = this.CTA.parent.getChildByName("lable");
@@ -117,6 +141,36 @@ export class GameManager extends Component {
                 .start();
             this.sethandpos();
         }, 1.4)
+        for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
+            this.pathPositions.push(this.ConveyorSlots.children[i].position.clone());
+            this.pathRotations.push(this.ConveyorSlots.children[i].rotation.clone());
+        }
+    }
+
+    moveConveyor(dt: number) {
+        this.conveyorOffset += dt * this.conveyorSpeed;
+        let maxPath = this.pathPositions.length;
+
+        for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
+            // Determine the exact float index along the track
+            let currentFloatIndex = (i + this.conveyorOffset) % maxPath;
+            if (currentFloatIndex < 0) currentFloatIndex += maxPath;
+
+            let indexA = Math.floor(currentFloatIndex);
+            let indexB = (indexA + 1) % maxPath;
+            let lerpFactor = currentFloatIndex - indexA;
+
+            // Interpolate position and rotation so they glide smoothly
+            let newPos = new Vec3();
+            Vec3.lerp(newPos, this.pathPositions[indexA], this.pathPositions[indexB], lerpFactor);
+
+            // Using Quat for rotation interpolation to handle the curves perfectly
+            let newRot = new Quat();
+            Quat.slerp(newRot, this.pathRotations[indexA], this.pathRotations[indexB], lerpFactor);
+
+            this.ConveyorSlots.children[i].setPosition(newPos);
+            this.ConveyorSlots.children[i].setRotation(newRot);
+        }
     }
 
     sethandpos() {
@@ -282,114 +336,174 @@ export class GameManager extends Component {
     Snthalfidx = 0
 
 
-    Cardmovement(node) {
+Cardmovement(node) {
         if (this.isAnimating) return;
         this.isAnimating = true;
-        let sIdx = 0;
-        let curntbus = this.BusArr[this.currentBusidx]
-        // if(curntbus){
-        let bus = Number(curntbus.name)
 
-        let ar = []
+        let ar = [];
         for (let i = node.children.length - 1; i > 0; i--) {
+            let card = node.children[i];
+            
+            // Pass the clicked stack node to find the nearest slot
+            let slot = this.getEmptyConveyorSlot(node); 
 
-
-            if (Number(node.children[i].name) === Math.floor(bus / 10) && this.fsthalfidx < 5) {
-
-                node.children[i].getComponent(Box).parent = curntbus.children[this.fsthalfidx]
-                this.fsthalfidx += 1;
-                this.Bix += 1
-            } else if (Number(node.children[i].name) === (bus % 10) && this.Snthalfidx < 5) {
-                node.children[i].getComponent(Box).parent = curntbus.children[5 + this.Snthalfidx]
-                this.Snthalfidx += 1;
-                this.Bix += 1
-            } else {
-
-                
-                node.children[i].getComponent(Box).parent = this.Collector.children[this.Collectoridx]
-                this.Collectoridx += 1
+            if (!slot) {
+                break; // Belt is full
             }
-            ar.push(node.children[i])
-                        if (this.Collectoridx > 30) {
-                    this.CTAcall()
-                    return;
-                }
+
+            slot["isOccupied"] = true; // Reserve slot immediately
+            card.getComponent(Box).parent = slot;
+            card.getComponent(Box).fromcollector = false;
+            ar.push(card);
+
             if (node.children[i].name != node.children[i - 1].name) {
                 break;
             }
-            // node.children[i].getComponent(Box).anim2()
         }
-        this.resetCollector()
-        let idx = 0
 
-        this.scheduleOnce(() => { this.isAnimating = false; }, 0.06 * ar.length)
-
+        let idx = 0;
         this.schedule(() => {
-            ar[idx].getComponent(Box).anim2()
-            idx += 1
-            this.audioSource.playOneShot(this.Audioclips[2], 1);
-            if (this.Bix >= 10) {
-                this.scheduleOnce(() => {
-                    this.audioSource.playOneShot(this.Audioclips[1], 1);
-                    this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true
-                    this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play()
-                }, 0.3)
-                this.Bix = 0
-                this.crtCnt += 1
-                this.scheduleOnce(() => {
-                    let bus = this.BusArr[this.currentBusidx]
-                    let buspos = bus.position.clone()
-
-
-                    tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
-                    tween(bus).delay(0.3).to(0.2, { position: v3(13.457, 4.8, 4.857) }).call(() => {
-                        this.resetbusslots(bus)
-                        bus.setPosition(-0.359, 4.8, -8.959)
-                        this.fsthalfidx = 0
-                        this.Snthalfidx = 0
-                        if (this.crntLevel === 1 && this.crtCnt === 2) {
-                            this.crntLevel += 1
-                            this.currentBusidx = 0
-                            this.levelHeaderBG.active = true;
-                            tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
-                            tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
-                            tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
-                                tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
-
-                                this.idleTime = 4
-                                this.setbusColor();
-                                tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).call(() => {
-
-                                    this.checkCollector()
-                                }).start()
-                            }).start()
-                        }
-                    }).start()
-                    this.currentBusidx += 1;
-                    if (this.currentBusidx > 2) {
-                        this.currentBusidx = 0
-                    }
-                    if (this.crntLevel === 2) {
-                        this.setbusColor();
-                    }
-                    if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
-                        tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
-                            this.checkCollector()
-
-                        }).start()
-                    }
-
-
-                }, 1)
+            if (ar[idx]) {
+                ar[idx].getComponent(Box).anim2();
+                this.audioSource.playOneShot(this.Audioclips[2], 1);
             }
-        }, 0.06, ar.length - 1)
+            idx += 1;
+        }, 0.06, ar.length - 1);
 
+        this.scheduleOnce(() => { this.isAnimating = false; }, 0.06 * ar.length);
+    }
 
-        // console.log(ar)
+    getEmptyConveyorSlot(stackNode: Node): Node | null {
+        let closestSlot = null;
+        let minDistance = Number.MAX_VALUE;
 
+        for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
+            let slot = this.ConveyorSlots.children[i];
+            
+            // Ensure slot has no physical children AND is not reserved by a flying card
+            if (slot.children.length === 0 && !slot["isOccupied"]) {
+                
+                // Find the slot closest to the stack that was clicked
+                let dist = Vec3.distance(stackNode.worldPosition, slot.worldPosition);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestSlot = slot;
+                }
+            }
+        }
+        return closestSlot; 
+    }
+
+    checkConveyorMatches() {
+        let curntbus = this.BusArr[this.currentBusidx];
+        if (!curntbus || this.dispatchingBus) return;
+        let busColor = Number(curntbus.name);
+
+        for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
+            let slot = this.ConveyorSlots.children[i];
+
+            if (slot.children.length > 0) {
+                let card = slot.children[0];
+
+                // Ensure card has fully landed before checking distances
+                if (Vec3.distance(card.position, Vec3.ZERO) > 0.2) continue;
+
+                let dist = Vec3.distance(slot.worldPosition, curntbus.worldPosition);
+
+                // If passing by the cart, check for color match
+                if (dist < this.pickupDistance) {
+                    let cardColor = Number(card.name);
+                    let matched = false;
+
+                    if (cardColor === Math.floor(busColor / 10) && this.fsthalfidx < 5) {
+                        this.moveToBus(card, curntbus.children[this.fsthalfidx], slot);
+                        this.fsthalfidx += 1;
+                        this.Bix += 1;
+                        matched = true;
+                    } else if (cardColor === (busColor % 10) && this.Snthalfidx < 5) {
+                        this.moveToBus(card, curntbus.children[5 + this.Snthalfidx], slot);
+                        this.Snthalfidx += 1;
+                        this.Bix += 1;
+                        matched = true;
+                    }
+
+                    if (matched && this.Bix >= 10 && !this.dispatchingBus) {
+                        this.dispatchingBus = true;
+                        this.dispatchBusLogic(); // Fire your existing level-up / bus swapping logic
+                    }
+                }
+            }
+        }
+    }
+
+    dispatchBusLogic() {
+        // Play the particle effect and sound for the full bus
+        this.scheduleOnce(() => {
+            this.audioSource.playOneShot(this.Audioclips[1], 1);
+            this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true;
+            this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play();
+        }, 0.3);
+
+        this.Bix = 0;
+        this.crtCnt += 1;
+
+        this.scheduleOnce(() => {
+            let bus = this.BusArr[this.currentBusidx];
+            let buspos = bus.position.clone();
+
+            // Animate the bus leaving
+            tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start();
+            tween(bus).delay(0.3).to(0.2, { position: v3(13.457, 4.8, 4.857) }).call(() => {
+                this.resetbusslots(bus);
+                bus.setPosition(-0.359, 4.8, -8.959);
+                this.fsthalfidx = 0;
+                this.Snthalfidx = 0;
+                
+                // Allow the next bus to start accepting cards from the conveyor
+                this.dispatchingBus = false; 
+
+                // Level up transition logic (from Level 1 to Level 2)
+                if (this.crntLevel === 1 && this.crtCnt === 2) {
+                    this.crntLevel += 1;
+                    this.currentBusidx = 0;
+                    this.levelHeaderBG.active = true;
+                    tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start();
+                    tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start();
+                    
+                    tween(this.Levels[0]).by(0.1, { x: -5000 }).call(() => {
+                        tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start();
+                        this.idleTime = 4;
+                        this.setbusColor();
+                        tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).start();
+                    }).start();
+                }
+            }).start();
+
+            // Bring in the next bus
+            this.currentBusidx += 1;
+            if (this.currentBusidx > 2) {
+                this.currentBusidx = 0;
+            }
+            if (this.crntLevel === 2) {
+                this.setbusColor();
+            }
+            if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
+                tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).start();
+            }
+
+        }, 1);
+    }
+
+    moveToBus(card: Node, targetNode: Node, currentSlot: Node) {
+        currentSlot["isOccupied"] = false; 
+        card.getComponent(Box).parent = targetNode;
+        card.getComponent(Box).fromcollector = true; 
+        card.getComponent(Box).anim2(); 
+        this.audioSource.playOneShot(this.Audioclips[2], 1);
     }
 
     CTAcall() {
+        ALAnalytics.endcardShown()
         this.CTA.active = true;
         let icon = this.CTA.children[1];
 
@@ -483,7 +597,7 @@ export class GameManager extends Component {
                             this.levelHeaderBG.active = true;
                             tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
                             tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
-                            tween(this.Levels[0]).to(0.1, { x: -5000 }).call(() => {
+                            tween(this.Levels[0]).by(0.1, { x: -5000 }).call(() => {
                                 this.setbusColor();
                                 tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
 
@@ -650,6 +764,7 @@ export class GameManager extends Component {
     }
 
     OnStartButtonClick() {
+        ALAnalytics.ctaClicked()
         this.Collector.getComponent(AudioSource).stop();
         this.audioSource.stop();
         if (sys.os === sys.OS.ANDROID) {
@@ -682,11 +797,16 @@ export class GameManager extends Component {
         }
         if (this.firsttouch) {
             this.dt1 += deltaTime;
-            if (this.dt1 >= 50) {
+            if (this.dt1 >= 60) {
                 this.CTA.active = true;
                 this.CTAcall()
                 this.firsttouch = false
             }
+        }
+        if (this.ConveyorSlots.children.length > 0) {
+            this.moveConveyor(deltaTime);
+            this.checkConveyorMatches();
+            
         }
     }
 }

@@ -66,11 +66,10 @@ export class Box extends Component {
 
     anim2() {
         const start = this.node.worldPosition.clone();
-        const end = this.parent.worldPosition.clone();
 
         // Peak height
-         let jumpHeight = this.fromcollector ? 2 : 4; 
-        
+        let jumpHeight = this.fromcollector ? 2.5 : 4;
+
         // Detach to world
         const startRot = this.node.worldRotation.clone();
         this.node.setParent(director.getScene());
@@ -79,43 +78,51 @@ export class Box extends Component {
 
         tween({ t: 0 })
             .to(0.3, { t: 1 }, {
-                easing: 'smooth',
+                easing: 'quadInOut', // 🟢 Changed to a valid, smooth easing function
                 onUpdate: (obj) => {
-
                     const t = obj.t;
-                    if(this.fromcollector) this.node.setScale(0.651,0.907,0.7)
-                    // ------------------------------
-                    // 🟢 Arc calculation (parabola)
-                    // ------------------------------
-                    const x = start.x + (end.x - start.x) * t;
-                    const z = start.z + (end.z - start.z) * t;
+                    if (this.fromcollector) 
+                        this.node.setScale(0.651, 0.907, 0.7);
 
-                    // Parabola Y
-                    const y =
-                        start.y +
-                        (end.y - start.y) * t +
-                        jumpHeight * Math.sin(Math.PI * t);
+                    // ------------------------------
+                    // 🟢 Dynamic End Position & Bezier Curve
+                    // ------------------------------
+                    // Fetch end position continuously in case the parent is moving
+                    const end = this.parent.worldPosition;
+
+                    // Calculate the control point for the Bezier curve (peak of the arc)
+                    const controlX = start.x + (end.x - start.x) * 0.5;
+                    const controlZ = start.z + (end.z - start.z) * 0.5;
+                    const controlY = Math.max(start.y, end.y) + jumpHeight;
+
+                    // Quadratic Bezier Formula
+                    const u = 1 - t;
+                    const x = (u * u * start.x) + (2 * u * t * controlX) + (t * t * end.x);
+                    const y = (u * u * start.y) + (2 * u * t * controlY) + (t * t * end.y);
+                    const z = (u * u * start.z) + (2 * u * t * controlZ) + (t * t * end.z);
 
                     this.node.setWorldPosition(x, y, z);
 
-                    // Optional rotation interpolation
+                    // Smooth rotation interpolation
                     let rot = new Quat();
                     Quat.slerp(rot, startRot, this.parent.worldRotation, t);
                     this.node.setWorldRotation(rot);
                 }
             })
             .call(() => {
+                // Because we tracked the parent dynamically, this reparenting will be seamless
                 const finalPos = this.node.worldPosition.clone();
                 const finalRot = this.node.worldRotation.clone();
 
                 this.node.setParent(this.parent);
                 this.node.worldPosition = finalPos;
                 this.node.worldRotation = finalRot;
-                this.node.setScale(1, 1, 0.95)
+                if (this.fromcollector)this.node.setScale(1, 1, 0.9);
+                else this.node.setScale(1.2, 1.3, 1.1);
+
             })
             .start();
     }
-
 
     anim(idx, node) {
 
