@@ -84,9 +84,9 @@
         "b": 64,
         "a": 255
       },
-      "roughness": 0.615,
-      "metallic": 0.609,
-      "specularIntensity": 1,
+      "roughness": 0.762,
+      "metallic": 0.644,
+      "specularIntensity": 0.835,
       "emissive": {
         "__type__": "cc.Color",
         "r": 16,

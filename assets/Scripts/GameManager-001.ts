@@ -105,10 +105,10 @@ export class GameManager extends Component {
     colliderpos: number[] = [4.7, 3.4, 2, 0.6]
 
     wrongCnt = 0;
-    crtCnt = 0
+    crtCnt = 2
     isAnimating: boolean = false;
 
-    crntLevel = 1;
+    crntLevel = 2;
     Collectoridx = 0;
 
     public Downnload(): void {
@@ -453,9 +453,9 @@ Cardmovement(node) {
 
             // Animate the bus leaving
             tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start();
-            tween(bus).delay(0.3).to(0.2, { position: v3(13.457, 4.8, 4.857) }).call(() => {
+            tween(bus).delay(0.3).to(0.2, { position: v3(22.3, 6.581, 7.466) }).call(() => {
                 this.resetbusslots(bus);
-                bus.setPosition(-0.359, 4.8, -8.959);
+                bus.setPosition(2.757, 6.581, -12.076);
                 this.fsthalfidx = 0;
                 this.Snthalfidx = 0;
                 
@@ -586,9 +586,9 @@ Cardmovement(node) {
                     let buspos = this.BusArr[this.currentBusidx].position.clone()
                     let bus = this.BusArr[this.currentBusidx]
                     tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start()
-                    tween(bus).delay(0.3).to(0.2, { position: v3(13.457, 4.8, 4.857) }).call(() => {
+                    tween(bus).delay(0.3).to(0.2, { position: v3(22.3, 6.581, 7.466) }).call(() => {
                         this.resetbusslots(bus)
-                        bus.setPosition(-0.359, 4.8, -8.959)
+                        bus.setPosition(2.757, 6.581, -12.076)
                         this.fsthalfidx = 0
                         this.Snthalfidx = 0
                         if (this.crntLevel === 1 && this.crtCnt === 2) {

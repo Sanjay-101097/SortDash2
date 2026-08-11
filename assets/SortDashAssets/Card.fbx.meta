@@ -157,7 +157,9 @@
         },
         "_techIdx": 0,
         "_defines": [
-          {},
+          {
+            "USE_INSTANCING": true
+          },
           {},
           {},
           {},
@@ -229,9 +231,9 @@
               "b": 119,
               "a": 255
             },
-            "roughness": 0.646,
-            "metallic": 0.394,
-            "specularIntensity": 0.699,
+            "roughness": 0.734,
+            "metallic": 0.475,
+            "specularIntensity": 1,
             "mainTexture": {
               "__uuid__": "5c6b85e8-a9a2-4576-81b1-971a3fb1bb8e@7d6ab",
               "__expectedType__": "cc.Texture2D"

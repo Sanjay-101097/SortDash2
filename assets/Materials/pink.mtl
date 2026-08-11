@@ -10,7 +10,9 @@
   },
   "_techIdx": 0,
   "_defines": [
-    {},
+    {
+      "USE_INSTANCING": true
+    },
     {},
     {},
     {},
@@ -82,8 +84,8 @@
         "b": 192,
         "a": 255
       },
-      "roughness": 0.707,
-      "metallic": 0.455,
+      "roughness": 0.722,
+      "metallic": 0.554,
       "specularIntensity": 1
     },
     {},
