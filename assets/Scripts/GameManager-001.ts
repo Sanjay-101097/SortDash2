@@ -154,7 +154,7 @@ export class GameManager extends Component {
                 .repeatForever()
                 .start();
             this.sethandpos();
-        }, 1.4)
+        }, 1)
         for (let i = 0; i < 3; i++) {
             if (this.busColumns[i] && this.busColumns[i].children.length > 0) {
                 this.activeBuses[i] = this.busColumns[i].children[0];
