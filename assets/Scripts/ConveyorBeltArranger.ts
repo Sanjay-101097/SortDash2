@@ -47,7 +47,9 @@ export class ConveyorBeltArranger extends Component {
 
         for (let i = 0; i < numCards; i++) {
             const card = cards[i];
-            card.destroyAllChildren()
+            // card.destroyAllChildren()
+            card.children[0].destroy()
+            card.children[1].destroy()
             
             const currentPos = card.getPosition();
             const initialEuler = card.eulerAngles.clone();

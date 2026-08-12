@@ -118,7 +118,7 @@ export class Box extends Component {
                 this.node.worldPosition = finalPos;
                 this.node.worldRotation = finalRot;
                 if (this.fromcollector)this.node.setScale(1, 1, 0.9);
-                else this.node.setScale(1.2, 1.3, 1.1);
+                else this.node.setScale(1.1, 1.2, 0.9);
 
             })
             .start();

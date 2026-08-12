@@ -72,7 +72,7 @@ export class GameManager extends Component {
     HandSF: SpriteFrame[] = [];
 
     @property([Node])
-    ConveyorSlots: Node =null; 
+    ConveyorSlots: Node = null;
 
     @property
     conveyorSpeed: number = 3.0; // How many slots advance per second
@@ -80,11 +80,25 @@ export class GameManager extends Component {
     @property
     pickupDistance: number = 2.5; // Trigger distance for the cart
 
+    // Replace @property(Node) BusArr: Node[] = [] with:
+    @property([Node])
+    busColumns: Node[] = []; // Assign col1, col2, col3 in the editor
+
+    // New state tracking for the 3 active columns
+    activeBuses: Node[] = [null, null, null];
+
+    // Tracks the internal fill state of the currently active bus in each column
+    busStates = [
+        { fst: 0, snd: 0, count: 0, dispatching: false, indexInCol: 0 },
+        { fst: 0, snd: 0, count: 0, dispatching: false, indexInCol: 0 },
+        { fst: 0, snd: 0, count: 0, dispatching: false, indexInCol: 0 }
+    ];
+
     private pathPositions: Vec3[] = [];
     private pathRotations: Quat[] = [];
     private conveyorOffset: number = 0;
     private dispatchingBus: boolean = false;
-    
+
 
 
     super_html_playable: super_html_playable = new super_html_playable();
@@ -120,10 +134,10 @@ export class GameManager extends Component {
         ALAnalytics.displayed();
 
         tween(this.intro.getChildByName("text"))
-        .to(0.5, { scale: v3(1.2, 1.2, 1),eulerAngles:v3(0,0,-15) })
-        .to(0.5, { scale: v3(1, 1, 1) }).union().repeatForever().start();
+            .to(0.5, { scale: v3(1.2, 1.2, 1), eulerAngles: v3(0, 0, -15) })
+            .to(0.5, { scale: v3(1, 1, 1) }).union().repeatForever().start();
         // this.Canvas.active = true;
-        tween(this.node).delay(2).call(()=>{
+        tween(this.node).delay(2).call(() => {
             this.intro.active = false
         }).start()
 
@@ -141,6 +155,13 @@ export class GameManager extends Component {
                 .start();
             this.sethandpos();
         }, 1.4)
+        for (let i = 0; i < 3; i++) {
+            if (this.busColumns[i] && this.busColumns[i].children.length > 0) {
+                this.activeBuses[i] = this.busColumns[i].children[0];
+                this.busStates[i].indexInCol = 0;
+            }
+        }
+
         for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
             this.pathPositions.push(this.ConveyorSlots.children[i].position.clone());
             this.pathRotations.push(this.ConveyorSlots.children[i].rotation.clone());
@@ -220,40 +241,72 @@ export class GameManager extends Component {
     }
 
     Findmatchingpos(): Vec3 {
-        let curbus = Number(this.BusArr[this.currentBusidx].name)
-        let level = this.Levels[this.crntLevel - 1]
-        let pos;
-        let node
+        let level = this.Levels[this.crntLevel - 1];
+        if (!level) return null;
 
+        // PASS 1: Check ONLY the immediate top cards for ALL 3 active buses.
+        // This ensures we always suggest an easy, available move first.
         for (let i = 0; i < level.children.length; i++) {
-            node = level.children[i].children[level.children[i].children.length - 1];
-            if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 5) {
-                pos = node.worldPosition.clone();
-                return pos;
-            } else if (Number(node.name) === (curbus % 10) && this.Snthalfidx < 5) {
-                pos = node.worldPosition.clone();
-                return pos;
-            }
-        }
+            let stack = level.children[i];
+            if (stack.children.length === 0) continue;
 
-        for (let i = 0; i < level.children.length; i++) {
+            let topNode = stack.children[stack.children.length - 1];
+            let cardColor = Number(topNode.name);
 
-            for (let j = 0; j < level.children[i].children.length - 1; j++) {
-                node = level.children[i].children[j];
-                if (Number(node.name) === Math.floor(curbus / 10) && this.fsthalfidx < 5) {
-                    pos = level.children[i].children[level.children[i].children.length - 1].worldPosition.clone();
-                    return pos;
-                } else if (Number(node.name) === (curbus % 10) && this.Snthalfidx < 5) {
-                    pos = level.children[i].children[level.children[i].children.length - 1].worldPosition.clone();
-                    return pos;
+            for (let colIdx = 0; colIdx < 3; colIdx++) {
+                let curntbus = this.activeBuses[colIdx];
+                let state = this.busStates[colIdx];
+
+                if (!curntbus || state.dispatching) continue;
+
+                let busColor = Number(curntbus.name);
+                let neededColor1 = Math.floor(busColor / 10);
+                let neededColor2 = busColor % 10;
+
+                let needsFirstHalf = state.fst < 5;
+                let needsSecondHalf = state.snd < 5;
+
+                if ((cardColor === neededColor1 && needsFirstHalf) ||
+                    (cardColor === neededColor2 && needsSecondHalf)) {
+                    return topNode.worldPosition.clone();
                 }
             }
-
         }
 
-        if (!pos) return null;
+        // PASS 2: If no top cards match ANY bus, then check the buried cards.
+        // It will point to the top of the stack to tell the user to unbury it.
+        for (let i = 0; i < level.children.length; i++) {
+            let stack = level.children[i];
+            if (stack.children.length === 0) continue;
 
+            for (let j = 0; j < stack.children.length - 1; j++) {
+                let node = stack.children[j];
+                let cardColor = Number(node.name);
 
+                for (let colIdx = 0; colIdx < 3; colIdx++) {
+                    let curntbus = this.activeBuses[colIdx];
+                    let state = this.busStates[colIdx];
+
+                    if (!curntbus || state.dispatching) continue;
+
+                    let busColor = Number(curntbus.name);
+                    let neededColor1 = Math.floor(busColor / 10);
+                    let neededColor2 = busColor % 10;
+
+                    let needsFirstHalf = state.fst < 5;
+                    let needsSecondHalf = state.snd < 5;
+
+                    if ((cardColor === neededColor1 && needsFirstHalf) ||
+                        (cardColor === neededColor2 && needsSecondHalf)) {
+                        let topNode = stack.children[stack.children.length - 1];
+                        return topNode.worldPosition.clone();
+                    }
+                }
+            }
+        }
+
+        // Return null if no matches were found anywhere
+        return null;
     }
 
 
@@ -336,16 +389,16 @@ export class GameManager extends Component {
     Snthalfidx = 0
 
 
-Cardmovement(node) {
+    Cardmovement(node) {
         if (this.isAnimating) return;
         this.isAnimating = true;
 
         let ar = [];
         for (let i = node.children.length - 1; i > 0; i--) {
             let card = node.children[i];
-            
+
             // Pass the clicked stack node to find the nearest slot
-            let slot = this.getEmptyConveyorSlot(node); 
+            let slot = this.getEmptyConveyorSlot(node);
 
             if (!slot) {
                 break; // Belt is full
@@ -379,10 +432,10 @@ Cardmovement(node) {
 
         for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
             let slot = this.ConveyorSlots.children[i];
-            
+
             // Ensure slot has no physical children AND is not reserved by a flying card
-            if (slot.children.length === 0 && !slot["isOccupied"]) {
-                
+            if (slot.children.length === 1 && !slot["isOccupied"]) {
+
                 // Find the slot closest to the stack that was clicked
                 let dist = Vec3.distance(stackNode.worldPosition, slot.worldPosition);
                 if (dist < minDistance) {
@@ -391,114 +444,124 @@ Cardmovement(node) {
                 }
             }
         }
-        return closestSlot; 
+        return closestSlot;
     }
 
     checkConveyorMatches() {
-        let curntbus = this.BusArr[this.currentBusidx];
-        if (!curntbus || this.dispatchingBus) return;
-        let busColor = Number(curntbus.name);
-
         for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
             let slot = this.ConveyorSlots.children[i];
 
-            if (slot.children.length > 0) {
-                let card = slot.children[0];
+            if (slot.children.length > 1) {
+                let card = slot.children[1];
 
                 // Ensure card has fully landed before checking distances
                 if (Vec3.distance(card.position, Vec3.ZERO) > 0.2) continue;
 
-                let dist = Vec3.distance(slot.worldPosition, curntbus.worldPosition);
+                let cardColor = Number(card.name);
+                let matched = false;
 
-                // If passing by the cart, check for color match
-                if (dist < this.pickupDistance) {
-                    let cardColor = Number(card.name);
-                    let matched = false;
+                // Check the card against all 3 active columns
+                for (let colIdx = 0; colIdx < 3; colIdx++) {
+                    let curntbus = this.activeBuses[colIdx];
+                    let state = this.busStates[colIdx];
 
-                    if (cardColor === Math.floor(busColor / 10) && this.fsthalfidx < 5) {
-                        this.moveToBus(card, curntbus.children[this.fsthalfidx], slot);
-                        this.fsthalfidx += 1;
-                        this.Bix += 1;
-                        matched = true;
-                    } else if (cardColor === (busColor % 10) && this.Snthalfidx < 5) {
-                        this.moveToBus(card, curntbus.children[5 + this.Snthalfidx], slot);
-                        this.Snthalfidx += 1;
-                        this.Bix += 1;
-                        matched = true;
-                    }
+                    // Skip if column is empty or currently animating a departure
+                    if (!curntbus || state.dispatching) continue;
 
-                    if (matched && this.Bix >= 10 && !this.dispatchingBus) {
-                        this.dispatchingBus = true;
-                        this.dispatchBusLogic(); // Fire your existing level-up / bus swapping logic
+                    let dist = Vec3.distance(slot.worldPosition, curntbus.worldPosition);
+
+                    // If passing by the bus, check for color match
+                    if (dist < this.pickupDistance) {
+                        let busColor = Number(curntbus.name);
+
+                        if (cardColor === Math.floor(busColor / 10) && state.fst < 5) {
+                            this.moveToBus(card, curntbus.children[state.fst], slot);
+                            state.fst += 1;
+                            state.count += 1;
+                            matched = true;
+                        } else if (cardColor === (busColor % 10) && state.snd < 5) {
+                            this.moveToBus(card, curntbus.children[5 + state.snd], slot);
+                            state.snd += 1;
+                            state.count += 1;
+                            matched = true;
+                        }
+
+                        // If it found a match in this column, check if the bus is full
+                        if (matched) {
+                            if (state.count >= 10 && !state.dispatching) {
+                                state.dispatching = true;
+                                this.dispatchBusLogic(colIdx); // Pass the specific column index
+                            }
+                            break; // Stop checking other columns for this specific card
+                        }
                     }
                 }
             }
         }
     }
 
-    dispatchBusLogic() {
+    dispatchBusLogic(colIdx: number) {
+        let state = this.busStates[colIdx];
+        let departingBus = this.activeBuses[colIdx];
+
         // Play the particle effect and sound for the full bus
         this.scheduleOnce(() => {
             this.audioSource.playOneShot(this.Audioclips[1], 1);
-            this.BusArr[this.currentBusidx].getChildByName("bus").children[0].active = true;
-            this.BusArr[this.currentBusidx].getChildByName("bus").children[0].getComponent(ParticleSystem).play();
+            departingBus.getChildByName("bus").children[0].active = true;
+            departingBus.getChildByName("bus").children[0].getComponent(ParticleSystem).play();
         }, 0.3);
 
-        this.Bix = 0;
-        this.crtCnt += 1;
-
         this.scheduleOnce(() => {
-            let bus = this.BusArr[this.currentBusidx];
-            let buspos = bus.position.clone();
-
-            // Animate the bus leaving
-            tween(bus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start();
-            tween(bus).delay(0.3).to(0.2, { position: v3(22.3, 6.581, 7.466) }).call(() => {
-                this.resetbusslots(bus);
-                bus.setPosition(2.757, 6.581, -12.076);
-                this.fsthalfidx = 0;
-                this.Snthalfidx = 0;
-                
-                // Allow the next bus to start accepting cards from the conveyor
-                this.dispatchingBus = false; 
-
-                // Level up transition logic (from Level 1 to Level 2)
-                if (this.crntLevel === 1 && this.crtCnt === 2) {
-                    this.crntLevel += 1;
-                    this.currentBusidx = 0;
-                    this.levelHeaderBG.active = true;
-                    tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start();
-                    tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start();
-                    
-                    tween(this.Levels[0]).by(0.1, { x: -5000 }).call(() => {
-                        tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start();
-                        this.idleTime = 4;
-                        this.setbusColor();
-                        tween(this.BusArr[this.currentBusidx]).delay(1.3).to(0.2, { position: buspos }).start();
-                    }).start();
-                }
+            // Animate the full bus leaving
+            tween(departingBus.getChildByName("bus")).to(0.1, { scale: v3(1, 1.8, 1) }).start();
+            tween(departingBus).delay(0.3).to(0.2, { position: v3(22.3, 6.581, 7.466) }).call(() => {
+                departingBus.active = false; // Hide it once it reaches the exit point
             }).start();
 
-            // Bring in the next bus
-            this.currentBusidx += 1;
-            if (this.currentBusidx > 2) {
-                this.currentBusidx = 0;
-            }
-            if (this.crntLevel === 2) {
-                this.setbusColor();
-            }
-            if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2) {
-                tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).start();
+            let columnChildren = this.busColumns[colIdx].children;
+
+            // Advance the index for the active bus
+            state.indexInCol += 1;
+            let nextActiveBus = columnChildren[state.indexInCol];
+
+            if (nextActiveBus) {
+                this.activeBuses[colIdx] = nextActiveBus;
+
+                // Reset states for the new active bus
+                state.fst = 0;
+                state.snd = 0;
+                state.count = 0;
+
+                // Shift ALL remaining buses in this column forward
+                for (let i = state.indexInCol; i < columnChildren.length; i++) {
+                    let busToMove = columnChildren[i];
+
+                    // The target is the current position of the bus immediately ahead of it (i - 1)
+                    let busAhead = columnChildren[i - 1];
+                    let targetPos = v3(busAhead.position.x, busAhead.position.y, busAhead.position.z);
+
+                    if (i === state.indexInCol) {
+                        // This is the new front row bus; when it finishes, unlock the belt
+                        tween(busToMove).delay(0.3).to(0.2, { position: targetPos }).call(() => {
+                            state.dispatching = false;
+                        }).start();
+                    } else {
+                        // The buses in the back just slide forward without triggering game logic
+                        tween(busToMove).delay(0.3).to(0.2, { position: targetPos }).start();
+                    }
+                }
+            } else {
+                this.activeBuses[colIdx] = null; // No more buses left in this column
             }
 
         }, 1);
     }
 
     moveToBus(card: Node, targetNode: Node, currentSlot: Node) {
-        currentSlot["isOccupied"] = false; 
+        currentSlot["isOccupied"] = false;
         card.getComponent(Box).parent = targetNode;
-        card.getComponent(Box).fromcollector = true; 
-        card.getComponent(Box).anim2(); 
+        card.getComponent(Box).fromcollector = true;
+        card.getComponent(Box).anim2();
         this.audioSource.playOneShot(this.Audioclips[2], 1);
     }
 
@@ -598,7 +661,7 @@ Cardmovement(node) {
                             tween(this.levelHeaderBG.getChildByName("HLBG").getComponent(UIOpacity)).to(0.5, { opacity: 255 }).start()
                             tween(this.levelHeader).to(0.5, { scale: v3(1.4, 1.4, 1) }).to(0.3, { scale: v3(1, 1, 1) }).delay(1.5).call(() => { this.levelHeaderBG.active = false; }).start()
                             tween(this.Levels[0]).by(0.1, { x: -5000 }).call(() => {
-                                this.setbusColor();
+                                // this.setbusColor();
                                 tween(this.Levels[1]).delay(0.2).to(1, { x: -13.4 }).to(0.1, { x: -11.4 }).start()
 
                                 this.idleTime = 4
@@ -614,7 +677,7 @@ Cardmovement(node) {
                         this.currentBusidx = 0
                     }
                     if (this.crntLevel === 2) {
-                        this.setbusColor();
+                        // this.setbusColor();
                     }
                     if ((this.crntLevel === 1 && this.currentBusidx < 2) || this.crntLevel === 2)
                         tween(this.BusArr[this.currentBusidx]).delay(0.3).to(0.2, { position: buspos }).call(() => {
@@ -806,7 +869,7 @@ Cardmovement(node) {
         if (this.ConveyorSlots.children.length > 0) {
             this.moveConveyor(deltaTime);
             this.checkConveyorMatches();
-            
+
         }
     }
 }
