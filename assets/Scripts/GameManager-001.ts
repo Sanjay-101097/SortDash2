@@ -220,18 +220,21 @@ export class GameManager extends Component {
 
         // nodeToAnimate.setPosition(pos.x, pos.y + 0.2, pos.z + 0.2)
         const changeIn = tween(nodeToAnimate)
-            .delay(0.3)
+            .delay(0.1)
+            
             .call(() => {
                 nodeToAnimate.children[1].active = false;
                 nodeToAnimate.children[0].active = true;
-            });
+            }).to(0.3,{scale:v3(1,1,1)});
 
         const changeOut = tween(nodeToAnimate)
-            .delay(0.3)
+            .delay(0.1)
+            
             .call(() => {
                 nodeToAnimate.children[1].active = true;
                 nodeToAnimate.children[0].active = false;
-            });
+            })
+            .to(0.3,{scale:v3(0.9,0.9,0.9)});
 
         tween(nodeToAnimate)
             .sequence(changeOut, changeIn)
@@ -402,6 +405,7 @@ export class GameManager extends Component {
 
             if (!slot) {
                 break; // Belt is full
+
             }
 
             slot["isOccupied"] = true; // Reserve slot immediately
@@ -425,6 +429,70 @@ export class GameManager extends Component {
 
         this.scheduleOnce(() => { this.isAnimating = false; }, 0.06 * ar.length);
     }
+
+    checkGameOver() {
+        // UPDATE: Add this.isGameOverTriggered to the guard clause
+        if (!this.firsttouch || this.CTA.active || this.isGameOverTriggered) return;
+
+        let isFull = true;
+        let possibleMatch = false;
+
+        // 1. Check if the belt is completely full using ONLY our custom flag
+        for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
+            let slot = this.ConveyorSlots.children[i];
+
+            if (!slot["isOccupied"]) {
+                isFull = false;
+                break;
+            }
+        }
+
+        if (!isFull) return;
+
+        // 2. If full, check for matches
+        for (let i = 0; i < this.ConveyorSlots.children.length; i++) {
+            let slot = this.ConveyorSlots.children[i];
+
+            if (slot.children.length > 1) {
+                let card = slot.children[slot.children.length - 1];
+                let cardColor = Number(card.name);
+
+                if (isNaN(cardColor)) continue;
+
+                for (let colIdx = 0; colIdx < 3; colIdx++) {
+                    let curntbus = this.activeBuses[colIdx];
+                    let state = this.busStates[colIdx];
+
+                    if (!curntbus || state.dispatching) continue;
+
+                    let busColor = Number(curntbus.name);
+                    let neededColor1 = Math.floor(busColor / 10);
+                    let neededColor2 = busColor % 10;
+
+                    let needsFirstHalf = state.fst < 5;
+                    let needsSecondHalf = state.snd < 5;
+
+                    if ((cardColor === neededColor1 && needsFirstHalf) ||
+                        (cardColor === neededColor2 && needsSecondHalf)) {
+                        possibleMatch = true;
+                        break;
+                    }
+                }
+            }
+            if (possibleMatch) break;
+        }
+
+        // 3. Trigger Game Over exactly ONCE
+        if (isFull && !possibleMatch) {
+            // UPDATE: Lock the game over sequence so it can't be called again
+            this.isGameOverTriggered = true;
+
+            this.scheduleOnce(() => {
+                this.CTAcall();
+            }, 1.0);
+        }
+    }
+    isGameOverTriggered: boolean = false;
 
     getEmptyConveyorSlot(stackNode: Node): Node | null {
         let closestSlot = null;
@@ -542,12 +610,12 @@ export class GameManager extends Component {
 
                     if (i === state.indexInCol) {
                         // This is the new front row bus; when it finishes, unlock the belt
-                        tween(busToMove).delay(0.3).to(0.2, { position: targetPos }).call(() => {
+                        tween(busToMove).delay(0.6).to(0.2, { position: targetPos }).call(() => {
                             state.dispatching = false;
                         }).start();
                     } else {
                         // The buses in the back just slide forward without triggering game logic
-                        tween(busToMove).delay(0.3).to(0.2, { position: targetPos }).start();
+                        tween(busToMove).delay(0.6).to(0.2, { position: targetPos }).start();
                     }
                 }
             } else {
@@ -870,6 +938,8 @@ export class GameManager extends Component {
             this.moveConveyor(deltaTime);
             this.checkConveyorMatches();
 
+            // Add the Game Over check here!
+            this.checkGameOver();
         }
     }
 }
